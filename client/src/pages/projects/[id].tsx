@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
-import { insertProgressUpdateSchema } from "@shared/schema";
+import { insertProgressUpdateSchema, insertCommentSchema } from "@shared/schema";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,6 +38,66 @@ import type { ProjectWithDetails, User as UserType } from "@shared/schema";
 const progressUpdateFormSchema = insertProgressUpdateSchema.omit({ projectId: true, userId: true });
 type ProgressUpdateFormData = z.infer<typeof progressUpdateFormSchema>;
 
+// Form schema for comments
+const commentFormSchema = insertCommentSchema.omit({ projectId: true, userId: true });
+type CommentFormData = z.infer<typeof commentFormSchema>;
+
+// Progress Update Card Component with Reactions
+function ProgressUpdateCard({ 
+  update, 
+  onToggleReaction, 
+  user, 
+  toggleReactionMutation 
+}: { 
+  update: any, 
+  onToggleReaction: (targetId: string, targetType: string) => void,
+  user: any,
+  toggleReactionMutation: any
+}) {
+  const { data: updateReactions = [] } = useQuery({
+    queryKey: ["/api/reactions", update.id, "progress_update"],
+    queryFn: async () => {
+      const res = await fetch(`/api/reactions?targetId=${update.id}&targetType=progress_update`);
+      if (!res.ok) throw new Error('Failed to fetch reactions');
+      return await res.json();
+    },
+  });
+
+  const userHasReacted = updateReactions.some((r: any) => r.userId === (user as UserType)?.id);
+
+  return (
+    <div className="border-l-2 border-primary pl-4 pb-4">
+      <div className="flex items-center gap-2 mb-2">
+        <Avatar className="h-6 w-6">
+          <AvatarImage src={update.user.profileImageUrl || undefined} />
+          <AvatarFallback>
+            {update.user.firstName?.[0] || 'U'}
+          </AvatarFallback>
+        </Avatar>
+        <span className="font-medium">{update.title}</span>
+        <span className="text-sm text-muted-foreground">
+          {formatDistanceToNow(new Date(update.createdAt), { addSuffix: true })}
+        </span>
+      </div>
+      <p className="text-muted-foreground mb-3">{update.content}</p>
+      {user && (
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant={userHasReacted ? "default" : "outline"}
+            onClick={() => onToggleReaction(update.id, "progress_update")}
+            disabled={toggleReactionMutation.isPending}
+            data-testid={`button-reaction-update-${update.id}`}
+            className="h-7 px-2 text-xs"
+          >
+            👏 {updateReactions.length}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProjectDetailPage() {
   const [match, params] = useRoute("/projects/:id");
   const { user } = useAuth();
@@ -45,9 +105,21 @@ export default function ProjectDetailPage() {
   const queryClient = useQueryClient();
   const projectId = params?.id;
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isCommentFormVisible, setIsCommentFormVisible] = useState(false);
 
   const { data: project, isLoading } = useQuery<ProjectWithDetails>({
     queryKey: ["/api/projects", projectId],
+    enabled: !!projectId,
+  });
+
+  // Query for reactions
+  const { data: projectReactions = [] } = useQuery({
+    queryKey: ["/api/reactions", projectId, "project"],
+    queryFn: async () => {
+      const res = await fetch(`/api/reactions?targetId=${projectId}&targetType=project`);
+      if (!res.ok) throw new Error('Failed to fetch reactions');
+      return await res.json();
+    },
     enabled: !!projectId,
   });
 
@@ -140,6 +212,73 @@ export default function ProjectDetailPage() {
     },
   });
 
+  const createCommentMutation = useMutation({
+    mutationFn: async (data: CommentFormData) => {
+      const res = await apiRequest("POST", `/api/projects/${projectId}/comments`, data);
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
+      commentForm.reset();
+      setIsCommentFormVisible(false);
+      toast({
+        title: "Comment added!",
+        description: "Your comment has been posted.",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to post comment. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const toggleReactionMutation = useMutation({
+    mutationFn: async ({ targetId, targetType }: { targetId: string; targetType: string }) => {
+      const res = await apiRequest("POST", `/api/reactions`, { targetId, targetType });
+      return await res.json();
+    },
+    onSuccess: (_, { targetId, targetType }) => {
+      // Invalidate specific reaction queries based on target type
+      queryClient.invalidateQueries({ queryKey: ["/api/reactions", targetId, targetType] });
+      // Also invalidate project reactions if this was a project reaction
+      if (targetType === "project") {
+        queryClient.invalidateQueries({ queryKey: ["/api/reactions", projectId, "project"] });
+      }
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to toggle reaction. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const progressUpdateForm = useForm<ProgressUpdateFormData>({
     resolver: zodResolver(progressUpdateFormSchema),
     defaultValues: {
@@ -148,8 +287,23 @@ export default function ProjectDetailPage() {
     },
   });
 
+  const commentForm = useForm<CommentFormData>({
+    resolver: zodResolver(commentFormSchema),
+    defaultValues: {
+      content: "",
+    },
+  });
+
   const handleCreateProgressUpdate = (data: ProgressUpdateFormData) => {
     createProgressUpdateMutation.mutate(data);
+  };
+
+  const handleCreateComment = (data: CommentFormData) => {
+    createCommentMutation.mutate(data);
+  };
+
+  const handleToggleReaction = (targetId: string, targetType: string) => {
+    toggleReactionMutation.mutate({ targetId, targetType });
   };
 
   const handleParticipate = (type: string) => {
@@ -251,6 +405,18 @@ export default function ProjectDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
+          {/* Reactions Button */}
+          {user && (
+            <Button
+              variant={projectReactions.some((r: any) => r.userId === (user as UserType)?.id) ? "default" : "outline"}
+              onClick={() => handleToggleReaction(projectId!, "project")}
+              disabled={toggleReactionMutation.isPending}
+              data-testid="button-toggle-reaction"
+            >
+              <Hand className="w-4 h-4 mr-2" />
+              👏 {projectReactions.length}
+            </Button>
+          )}
           <Button 
             variant="outline" 
             onClick={shareProject}
@@ -371,21 +537,13 @@ export default function ProjectDetailPage() {
               ) : (
                 <div className="space-y-4">
                   {project.progressUpdates?.map((update) => (
-                    <div key={update.id} className="border-l-2 border-primary pl-4 pb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src={update.user.profileImageUrl || undefined} />
-                          <AvatarFallback>
-                            {update.user.firstName?.[0] || update.user.email?.[0] || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium">{update.title}</span>
-                        <span className="text-sm text-muted-foreground">
-                          {formatDistanceToNow(new Date(update.createdAt), { addSuffix: true })}
-                        </span>
-                      </div>
-                      <p className="text-muted-foreground">{update.content}</p>
-                    </div>
+                    <ProgressUpdateCard 
+                      key={update.id} 
+                      update={update} 
+                      onToggleReaction={handleToggleReaction}
+                      user={user}
+                      toggleReactionMutation={toggleReactionMutation}
+                    />
                   ))}
                 </div>
               )}
@@ -395,9 +553,68 @@ export default function ProjectDetailPage() {
           {/* Comments */}
           <Card>
             <CardHeader>
-              <CardTitle>Comments</CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle>Comments</CardTitle>
+                {user && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => setIsCommentFormVisible(!isCommentFormVisible)}
+                    data-testid="button-toggle-comment-form"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    {isCommentFormVisible ? 'Cancel' : 'Add Comment'}
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
+              {/* Comment Form */}
+              {user && isCommentFormVisible && (
+                <div className="mb-6 p-4 border rounded-lg bg-muted/30">
+                  <Form {...commentForm}>
+                    <form onSubmit={commentForm.handleSubmit(handleCreateComment)} className="space-y-4">
+                      <FormField
+                        control={commentForm.control}
+                        name="content"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Your Comment</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Share your thoughts about this project..."
+                                rows={3}
+                                data-testid="input-comment-content"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => setIsCommentFormVisible(false)}
+                          data-testid="button-cancel-comment"
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          type="submit" 
+                          disabled={createCommentMutation.isPending}
+                          data-testid="button-submit-comment"
+                        >
+                          {createCommentMutation.isPending ? "Posting..." : "Post Comment"}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </div>
+              )}
+
+              {/* Comments List */}
               {project.comments?.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">
                   No comments yet. Be the first to share your thoughts!
@@ -409,12 +626,12 @@ export default function ProjectDetailPage() {
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={comment.user.profileImageUrl || undefined} />
                         <AvatarFallback>
-                          {comment.user.firstName?.[0] || comment.user.email?.[0] || 'U'}
+                          {comment.user.firstName?.[0] || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium">{comment.user.firstName || comment.user.email}</span>
+                          <span className="font-medium">{comment.user.firstName || 'Anonymous User'}</span>
                           <span className="text-sm text-muted-foreground">
                             {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
                           </span>

@@ -6,6 +6,8 @@ import {
   insertProjectSchema,
   insertProgressUpdateSchema,
   insertCommentSchema,
+  insertReactionSchema,
+  reactionRequestSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -223,18 +225,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Reaction routes
+  app.get('/api/reactions', async (req, res) => {
+    try {
+      const { targetId, targetType } = req.query;
+      
+      if (!targetId || !targetType) {
+        return res.status(400).json({ message: "targetId and targetType are required" });
+      }
+      
+      // Validate targetType using the same enum validation
+      if (!['project', 'progress_update', 'comment'].includes(targetType as string)) {
+        return res.status(400).json({ message: "Target type must be one of: project, progress_update, comment" });
+      }
+      
+      const reactions = await storage.getReactions(targetId as string, targetType as string);
+      res.json({
+        reactions,
+        count: reactions.length
+      });
+    } catch (error) {
+      console.error("Error fetching reactions:", error);
+      res.status(500).json({ message: "Failed to fetch reactions" });
+    }
+  });
+
   app.post('/api/reactions', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { targetId, targetType } = req.body;
       
-      // Check if reaction already exists
-      const existing = await storage.getReactions(targetId, targetType);
-      const hasUserReacted = existing.some(r => r.userId === userId && r.type === 'clap');
+      // SECURITY: Validate request body with Zod schema
+      const requestData = reactionRequestSchema.parse(req.body);
+      const { targetId, targetType } = requestData;
       
+      // SECURITY: Verify target exists before allowing reactions
+      let targetExists = false;
+      switch (targetType) {
+        case 'project':
+          const project = await storage.getProject(targetId);
+          targetExists = !!project;
+          break;
+        case 'progress_update':
+          const progressUpdate = await storage.getProgressUpdate(targetId);
+          targetExists = !!progressUpdate;
+          break;
+        case 'comment':
+          const comment = await storage.getComment(targetId);
+          targetExists = !!comment;
+          break;
+      }
+      
+      if (!targetExists) {
+        return res.status(404).json({ 
+          message: `${targetType.replace('_', ' ')} not found` 
+        });
+      }
+      
+      // Check if reaction already exists and get current reactions
+      const existingReactions = await storage.getReactions(targetId, targetType);
+      const hasUserReacted = existingReactions.some(r => r.userId === userId && r.type === 'clap');
+      
+      let action: 'added' | 'removed';
       if (hasUserReacted) {
         await storage.removeReaction(targetId, targetType, userId);
-        res.json({ action: 'removed' });
+        action = 'removed';
       } else {
         await storage.addReaction({
           targetId,
@@ -242,10 +295,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userId,
           type: 'clap',
         });
-        res.json({ action: 'added' });
+        action = 'added';
       }
-    } catch (error) {
+      
+      // Get updated reaction count and user status
+      const updatedReactions = await storage.getReactions(targetId, targetType);
+      const totalCount = updatedReactions.length;
+      const userReacted = action === 'added';
+      
+      res.json({ 
+        action,
+        count: totalCount,
+        userReacted
+      });
+    } catch (error: any) {
       console.error("Error toggling reaction:", error);
+      
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Invalid reaction data", 
+          errors: error.errors 
+        });
+      }
+      
       res.status(500).json({ message: "Failed to toggle reaction" });
     }
   });

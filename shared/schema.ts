@@ -188,6 +188,14 @@ export const insertReactionSchema = createInsertSchema(reactions).omit({
   createdAt: true,
 });
 
+// Validation schema for reaction API requests
+export const reactionRequestSchema = z.object({
+  targetId: z.string().min(1, "Target ID is required"),
+  targetType: z.enum(["project", "progress_update", "comment"], {
+    errorMap: () => ({ message: "Target type must be one of: project, progress_update, comment" })
+  }),
+});
+
 // Type exports
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;

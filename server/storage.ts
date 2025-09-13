@@ -48,10 +48,12 @@ export interface IStorage {
   // Progress update operations
   createProgressUpdate(update: InsertProgressUpdate): Promise<ProgressUpdate>;
   getProjectProgressUpdates(projectId: string): Promise<ProgressUpdate[]>;
+  getProgressUpdate(id: string): Promise<ProgressUpdate | undefined>;
   
   // Comment operations
   createComment(comment: InsertComment): Promise<Comment>;
   getProjectComments(projectId: string): Promise<Comment[]>;
+  getComment(id: string): Promise<Comment | undefined>;
   
   // Reaction operations
   addReaction(reaction: InsertReaction): Promise<Reaction>;
@@ -267,6 +269,11 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(progressUpdates.createdAt));
   }
 
+  async getProgressUpdate(id: string): Promise<ProgressUpdate | undefined> {
+    const [update] = await db.select().from(progressUpdates).where(eq(progressUpdates.id, id));
+    return update;
+  }
+
   // Comment operations
   async createComment(commentData: InsertComment): Promise<Comment> {
     const [comment] = await db
@@ -282,6 +289,11 @@ export class DatabaseStorage implements IStorage {
       .from(comments)
       .where(eq(comments.projectId, projectId))
       .orderBy(desc(comments.createdAt));
+  }
+
+  async getComment(id: string): Promise<Comment | undefined> {
+    const [comment] = await db.select().from(comments).where(eq(comments.id, id));
+    return comment;
   }
 
   // Reaction operations
