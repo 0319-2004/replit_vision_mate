@@ -18,7 +18,7 @@ export default function HomePage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading projects...</p>
+          <p className="text-muted-foreground">プロジェクト読み込み中...</p>
         </div>
       </div>
     );
@@ -30,23 +30,23 @@ export default function HomePage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">
-            Welcome back, {(user as User)?.firstName || 'Visionary'}! 👋
+おかえりなさい、{(user as User)?.firstName || 'ビジョナリー'}さん！👋
           </h1>
           <p className="text-muted-foreground">
-            Discover new projects or share your own vision with the community.
+新しいプロジェクトを発見したり、あなたのビジョンをコミュニティと共有しましょう。
           </p>
         </div>
         <div className="flex gap-2">
           <Link href="/discover">
             <Button variant="outline" data-testid="button-discover">
               <Users className="w-4 h-4 mr-2" />
-              Discover
+発見
             </Button>
           </Link>
           <Link href="/projects/new">
             <Button data-testid="button-create-project">
               <Plus className="w-4 h-4 mr-2" />
-              Create Project
+プロジェクト作成
             </Button>
           </Link>
         </div>
@@ -60,7 +60,7 @@ export default function HomePage() {
               <Rocket className="w-5 h-5 text-primary mr-2" />
               <div>
                 <p className="text-2xl font-bold">{projects.length}</p>
-                <p className="text-xs text-muted-foreground">Active Projects</p>
+                <p className="text-xs text-muted-foreground">アクティブプロジェクト</p>
               </div>
             </div>
           </CardContent>
@@ -71,7 +71,7 @@ export default function HomePage() {
               <Eye className="w-5 h-5 text-blue-500 mr-2" />
               <div>
                 <p className="text-2xl font-bold">👀</p>
-                <p className="text-xs text-muted-foreground">Watching</p>
+                <p className="text-xs text-muted-foreground">ウォッチ中</p>
               </div>
             </div>
           </CardContent>
@@ -82,7 +82,7 @@ export default function HomePage() {
               <Hand className="w-5 h-5 text-yellow-500 mr-2" />
               <div>
                 <p className="text-2xl font-bold">✋</p>
-                <p className="text-xs text-muted-foreground">Raised Hands</p>
+                <p className="text-xs text-muted-foreground">手を上げた</p>
               </div>
             </div>
           </CardContent>
@@ -93,7 +93,7 @@ export default function HomePage() {
               <Rocket className="w-5 h-5 text-green-500 mr-2" />
               <div>
                 <p className="text-2xl font-bold">🚀</p>
-                <p className="text-xs text-muted-foreground">Committed</p>
+                <p className="text-xs text-muted-foreground">コミット済み</p>
               </div>
             </div>
           </CardContent>
@@ -103,10 +103,10 @@ export default function HomePage() {
       {/* Recent Projects */}
       <section>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">Recent Projects</h2>
+          <h2 className="text-2xl font-semibold">最近のプロジェクト</h2>
           <Link href="/projects">
             <Button variant="ghost" data-testid="button-view-all-projects">
-              View All
+すべて表示
             </Button>
           </Link>
         </div>
@@ -115,14 +115,14 @@ export default function HomePage() {
           <Card>
             <CardContent className="py-12 text-center">
               <Rocket className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
+              <h3 className="text-lg font-semibold mb-2">まだプロジェクトがありません</h3>
               <p className="text-muted-foreground mb-4">
-                Be the first to share your vision and inspire others to take action!
+                あなたのビジョンをシェアし、他の人たちに行動を起こすようにインスパイアしてみませんか！
               </p>
               <Link href="/projects/new">
                 <Button data-testid="button-first-project">
                   <Plus className="w-4 h-4 mr-2" />
-                  Create Your First Project
+最初のプロジェクトを作成
                 </Button>
               </Link>
             </CardContent>

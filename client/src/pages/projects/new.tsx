@@ -44,8 +44,8 @@ export default function CreateProjectPage() {
     },
     onSuccess: (project: any) => {
       toast({
-        title: "Project created!",
-        description: "Your vision is now live and ready for collaborators.",
+        title: "プロジェクトが作成されました！",
+        description: "あなたのビジョンがライブになり、コラボレーターを受け入れる準備が整いました。",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       navigate(`/projects/${project.id}`);
@@ -53,8 +53,8 @@ export default function CreateProjectPage() {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: "未認証",
+          description: "ログアウトしています。再度ログインしています...",
           variant: "destructive",
         });
         setTimeout(() => {
@@ -63,8 +63,8 @@ export default function CreateProjectPage() {
         return;
       }
       toast({
-        title: "Error",
-        description: "Failed to create project. Please try again.",
+        title: "エラー",
+        description: "プロジェクトの作成に失敗しました。もう一度お試しください。",
         variant: "destructive",
       });
     },
@@ -89,10 +89,10 @@ export default function CreateProjectPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Rocket className="w-8 h-8 text-primary" />
-            Create Your Vision
+あなたのビジョンを作成
           </h1>
           <p className="text-muted-foreground mt-1">
-            Share your idea and find collaborators who believe in your vision.
+あなたのアイデアをシェアし、あなたのビジョンを信じるコラボレーターを見つけましょう。
           </p>
         </div>
       </div>
@@ -102,9 +102,9 @@ export default function CreateProjectPage() {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Project Details</CardTitle>
+              <CardTitle>プロジェクト詳細</CardTitle>
               <CardDescription>
-                Tell the community about your vision and what you want to accomplish.
+                あなたのビジョンと達成したいことをコミュニティに伝えましょう。
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -115,10 +115,10 @@ export default function CreateProjectPage() {
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Project Title *</FormLabel>
+                        <FormLabel>プロジェクトタイトル *</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="e.g., Community Garden Initiative"
+                            placeholder="例：コミュニティガーデンイニシアチブ"
                             data-testid="input-title"
                             {...field} 
                           />
@@ -133,10 +133,10 @@ export default function CreateProjectPage() {
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Description *</FormLabel>
+                        <FormLabel>説明 *</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Describe your vision, the problem you're solving, and what kind of help you're looking for..."
+                            placeholder="あなたのビジョン、解決しようとしている問題、求めているサポートの種類を説明してください..."
                             className="min-h-32"
                             data-testid="textarea-description"
                             {...field}
@@ -157,12 +157,12 @@ export default function CreateProjectPage() {
                       {createProjectMutation.isPending ? (
                         <>
                           <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                          Creating...
+作成中...
                         </>
                       ) : (
                         <>
                           <Rocket className="w-4 h-4 mr-2" />
-                          Create Project
+プロジェクト作成
                         </>
                       )}
                     </Button>
@@ -173,7 +173,7 @@ export default function CreateProjectPage() {
                       onClick={() => navigate("/")}
                       data-testid="button-cancel"
                     >
-                      Cancel
+キャンセル
                     </Button>
                   </div>
                 </form>
@@ -188,26 +188,26 @@ export default function CreateProjectPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-yellow-500" />
-                Tips for Success
+成功のためのヒント
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
               <div>
-                <h4 className="font-medium mb-1">Be Clear & Specific</h4>
+                <h4 className="font-medium mb-1">明確で具体的に</h4>
                 <p className="text-muted-foreground">
-                  Explain exactly what you want to achieve and what success looks like.
+                  達成したいことと成功がどのような状態かを正確に説明してください。
                 </p>
               </div>
               <div>
-                <h4 className="font-medium mb-1">Show Your Passion</h4>
+                <h4 className="font-medium mb-1">情熱を示す</h4>
                 <p className="text-muted-foreground">
-                  People are drawn to authentic enthusiasm and genuine care about the cause.
+                  人々は本物の情熱と原因への真の関心に引かれます。
                 </p>
               </div>
               <div>
-                <h4 className="font-medium mb-1">Define the Ask</h4>
+                <h4 className="font-medium mb-1">依頼内容を明確にする</h4>
                 <p className="text-muted-foreground">
-                  Be specific about what kind of help, skills, or resources you need.
+                  必要なサポート、スキル、リソースの種類を具体的に明記してください。
                 </p>
               </div>
             </CardContent>
@@ -217,21 +217,21 @@ export default function CreateProjectPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="w-5 h-5 text-green-500" />
-                What Happens Next?
+次に何が起こるか？
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</div>
-                <p className="text-muted-foreground">Your project goes live and appears in discovery</p>
+                <p className="text-muted-foreground">あなたのプロジェクトがライブになり、発見ページに表示されます</p>
               </div>
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</div>
-                <p className="text-muted-foreground">People show interest with 👀 Watch, ✋ Raise Hand, or 🚀 Commit</p>
+                <p className="text-muted-foreground">人々が👀ウォッチ、✋手を上げる、🚀コミットで関心を示します</p>
               </div>
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</div>
-                <p className="text-muted-foreground">Connect with collaborators and share progress updates</p>
+                <p className="text-muted-foreground">コラボレーターと繋がり、進捗更新を共有します</p>
               </div>
             </CardContent>
           </Card>

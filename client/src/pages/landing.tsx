@@ -31,7 +31,7 @@ export default function LandingPage() {
             onClick={() => window.location.href = '/api/login'}
             data-testid="button-login"
           >
-            Get Started
+            始める
           </Button>
         </div>
       </header>
@@ -55,12 +55,11 @@ export default function LandingPage() {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Turn Your Ideas Into{" "}
-            <span className="text-primary">Action</span>
+あなたのアイデアを{" "}
+            <span className="text-primary">アクション</span>に
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            VisionMates is where anyone can turn their ideas into action by forming teams, 
-            sharing progress, and finding collaborators — starting from small, personal visions.
+VisionMatesは、誰でも小さな個人的なビジョンから始めて、チームを結成し、進捗を共有し、コラボレーターを見つけることでアイデアをアクションに変える場所です。
           </p>
           <Button 
             size="lg" 
@@ -68,7 +67,7 @@ export default function LandingPage() {
             className="mr-4"
             data-testid="button-hero-signup"
           >
-            Start Your Vision
+            あなたのビジョンを始める
           </Button>
           <Button 
             variant="outline" 
@@ -76,7 +75,7 @@ export default function LandingPage() {
             onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
             data-testid="button-learn-more"
           >
-            Learn More
+            詳しく知る
           </Button>
         </div>
       </section>
@@ -85,7 +84,7 @@ export default function LandingPage() {
       <section id="features" className="py-20 px-4 bg-muted/50">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">
-            Everything You Need to Build Your Vision
+            あなたのビジョンを実現するために必要なすべて
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card>
@@ -93,11 +92,11 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                   <Rocket className="w-6 h-6 text-primary" />
                 </div>
-                <CardTitle>Vision-Driven Projects</CardTitle>
+                <CardTitle>ビジョン主導プロジェクト</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Post a project based on your idea, challenge, or social issue — big or small.
+                  あなたのアイデア、チャレンジ、社会問題に基づいたプロジェクトを投稿しましょう。大小問わず。
                 </p>
               </CardContent>
             </Card>
@@ -110,11 +109,11 @@ export default function LandingPage() {
                     <Hand className="w-4 h-4 text-primary" />
                   </div>
                 </div>
-                <CardTitle>Participation Signals</CardTitle>
+                <CardTitle>参加シグナル</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Express interest with Watch, Raise Hand, or Commit to join projects that inspire you.
+                  ウォッチ、手を上げる、コミットであなたをインスパイアしたプロジェクトへの関心を表示しましょう。
                 </p>
               </CardContent>
             </Card>
@@ -124,11 +123,11 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                   <Clock className="w-6 h-6 text-primary" />
                 </div>
-                <CardTitle>Progress Updates</CardTitle>
+                <CardTitle>進捗更新</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Keep a visible timeline of milestones instead of losing updates in chat threads.
+                  チャットスレッドで更新を見失う代わりに、マイルストーンの視覚的タイムラインを維持しましょう。
                 </p>
               </CardContent>
             </Card>
@@ -138,11 +137,11 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                   <Users className="w-6 h-6 text-primary" />
                 </div>
-                <CardTitle>Discover Mode</CardTitle>
+                <CardTitle>発見モード</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Swipe through projects like a card deck to find inspiring ones quickly.
+                  カードデッキのようにプロジェクトをスワイプして、インスパイアされるものを素早く見つけましょう。
                 </p>
               </CardContent>
             </Card>
@@ -152,11 +151,11 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                   <Share className="w-6 h-6 text-primary" />
                 </div>
-                <CardTitle>Easy Sharing</CardTitle>
+                <CardTitle>簡単シェア</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Invite friends with shareable links for LINE, Instagram, LinkedIn, and more.
+                  LINE、Instagram、LinkedInなどのシェアリンクで友達を招待しましょう。
                 </p>
               </CardContent>
             </Card>
@@ -166,11 +165,11 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                   <div className="text-primary text-lg">👏</div>
                 </div>
-                <CardTitle>Lightweight Collaboration</CardTitle>
+                <CardTitle>軽量コラボレーション</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Comment, cheer each other on with reactions, and stay motivated together.
+                  コメントし、リアクションでお互いを応援し、一緒にモチベーションを維持しましょう。
                 </p>
               </CardContent>
             </Card>
@@ -182,17 +181,17 @@ export default function LandingPage() {
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-6">
-            Ready to Turn Your Vision Into Reality?
+            あなたのビジョンを現実にする準備はできましたか？
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Join VisionMates and start building momentum around your ideas today.
+            VisionMatesに参加して、今日からあなたのアイデアに勢いをつけ始めましょう。
           </p>
           <Button 
             size="lg" 
             onClick={() => window.location.href = '/api/login'}
             data-testid="button-cta-signup"
           >
-            Get Started Now
+            今すぐ始める
           </Button>
         </div>
       </section>
@@ -200,7 +199,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t py-8 px-4">
         <div className="max-w-6xl mx-auto text-center text-muted-foreground">
-          <p>&copy; 2024 VisionMates. Turn ideas into action.</p>
+          <p>&copy; 2024 VisionMates. アイデアをアクションに。</p>
         </div>
       </footer>
     </div>

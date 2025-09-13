@@ -23,16 +23,16 @@ export function JobCreator() {
   const [newSelector, setNewSelector] = useState("")
 
   const dataTypes = [
-    { value: "text", label: "Text Content" },
-    { value: "links", label: "Links & URLs" },
-    { value: "images", label: "Images" },
-    { value: "tables", label: "Tables" },
-    { value: "forms", label: "Form Data" },
-    { value: "metadata", label: "Page Metadata" }
+    { value: "text", label: "テキストコンテンツ" },
+    { value: "links", label: "リンクとURL" },
+    { value: "images", label: "画像" },
+    { value: "tables", label: "テーブル" },
+    { value: "forms", label: "フォームデータ" },
+    { value: "metadata", label: "ページメタデータ" }
   ]
 
   const platforms = [
-    { value: "website", label: "Website", icon: Globe },
+    { value: "website", label: "ウェブサイト", icon: Globe },
     { value: "twitter", label: "Twitter/X", icon: Globe },
     { value: "linkedin", label: "LinkedIn", icon: Globe },
     { value: "reddit", label: "Reddit", icon: Globe }
@@ -57,8 +57,8 @@ export function JobCreator() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Create Scraping Job</h1>
-        <p className="text-muted-foreground">Configure a new data extraction job for websites or social media</p>
+        <h1 className="text-3xl font-bold tracking-tight">スクレイピングジョブの作成</h1>
+        <p className="text-muted-foreground">ウェブサイトやSNS用の新しいデータ抽出ジョブを設定</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -66,15 +66,15 @@ export function JobCreator() {
           {/* Basic Configuration */}
           <Card>
             <CardHeader>
-              <CardTitle>Basic Configuration</CardTitle>
-              <CardDescription>Define the target and extraction parameters</CardDescription>
+              <CardTitle>基本設定</CardTitle>
+              <CardDescription>ターゲットと抽出パラメータを定義</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="job-name">Job Name</Label>
+                <Label htmlFor="job-name">ジョブ名</Label>
                 <Input
                   id="job-name"
-                  placeholder="e.g., E-commerce Product Data"
+                  placeholder="例：EC商品データ"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   data-testid="input-job-name"
@@ -82,7 +82,7 @@ export function JobCreator() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="target-url">Target URL</Label>
+                <Label htmlFor="target-url">ターゲットURL</Label>
                 <Input
                   id="target-url"
                   placeholder="https://example.com"
@@ -93,10 +93,10 @@ export function JobCreator() {
               </div>
 
               <div className="space-y-2">
-                <Label>Platform Type</Label>
+                <Label>プラットフォームタイプ</Label>
                 <Select>
                   <SelectTrigger data-testid="select-platform">
-                    <SelectValue placeholder="Select platform type" />
+                    <SelectValue placeholder="プラットフォームタイプを選択" />
                   </SelectTrigger>
                   <SelectContent>
                     {platforms.map((platform) => (
@@ -109,10 +109,10 @@ export function JobCreator() {
               </div>
 
               <div className="space-y-2">
-                <Label>Data Type to Extract</Label>
+                <Label>抽出するデータタイプ</Label>
                 <Select value={formData.dataType} onValueChange={(value) => setFormData({ ...formData, dataType: value })}>
                   <SelectTrigger data-testid="select-data-type">
-                    <SelectValue placeholder="What type of data to extract" />
+                    <SelectValue placeholder="抽出するデータのタイプ" />
                   </SelectTrigger>
                   <SelectContent>
                     {dataTypes.map((type) => (
@@ -129,12 +129,12 @@ export function JobCreator() {
           {/* Custom Extraction Rules */}
           <Card>
             <CardHeader>
-              <CardTitle>Custom Extraction Rules</CardTitle>
-              <CardDescription>Define CSS selectors or XPath expressions for precise data extraction</CardDescription>
+              <CardTitle>カスタム抽出ルール</CardTitle>
+              <CardDescription>正確なデータ抽出のCSSセレクタやXPath式を定義</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="extraction-rules">CSS Selectors / XPath</Label>
+                <Label htmlFor="extraction-rules">CSSセレクタ / XPath</Label>
                 <Textarea
                   id="extraction-rules"
                   placeholder="h1.title, .price, article p"
@@ -145,10 +145,10 @@ export function JobCreator() {
               </div>
 
               <div className="space-y-2">
-                <Label>Quick Selectors</Label>
+                <Label>クイックセレクタ</Label>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Add CSS selector"
+                    placeholder="CSSセレクタを追加"
                     value={newSelector}
                     onChange={(e) => setNewSelector(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addSelector()}
@@ -177,9 +177,9 @@ export function JobCreator() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                Scheduling Options
+                スケジューリングオプション
               </CardTitle>
-              <CardDescription>Configure automatic recurring scraping</CardDescription>
+              <CardDescription>自動繰り返しスクレイピングの設定</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-2">
@@ -189,21 +189,21 @@ export function JobCreator() {
                   onCheckedChange={(checked) => setFormData({ ...formData, scheduled: checked })}
                   data-testid="switch-scheduled"
                 />
-                <Label htmlFor="scheduled">Enable scheduled scraping</Label>
+                <Label htmlFor="scheduled">スケジュールされたスクレイピングを有効にする</Label>
               </div>
 
               {formData.scheduled && (
                 <div className="space-y-2">
-                  <Label>Frequency</Label>
+                  <Label>頻度</Label>
                   <Select value={formData.interval} onValueChange={(value) => setFormData({ ...formData, interval: value })}>
                     <SelectTrigger data-testid="select-interval">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="hourly">Every Hour</SelectItem>
-                      <SelectItem value="daily">Daily</SelectItem>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="hourly">毎時</SelectItem>
+                      <SelectItem value="daily">毎日</SelectItem>
+                      <SelectItem value="weekly">毎週</SelectItem>
+                      <SelectItem value="monthly">毎月</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -216,26 +216,26 @@ export function JobCreator() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Job Preview</CardTitle>
-              <CardDescription>Review your configuration</CardDescription>
+              <CardTitle>ジョブプレビュー</CardTitle>
+              <CardDescription>設定を確認</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2 text-sm">
                 <div>
-                  <span className="font-medium">Name:</span> {formData.name || "Untitled Job"}
+                  <span className="font-medium">名前:</span> {formData.name || "無題のジョブ"}
                 </div>
                 <div>
-                  <span className="font-medium">URL:</span> {formData.url || "Not set"}
+                  <span className="font-medium">URL:</span> {formData.url || "未設定"}
                 </div>
                 <div>
-                  <span className="font-medium">Data Type:</span> {formData.dataType || "Not selected"}
+                  <span className="font-medium">データタイプ:</span> {formData.dataType || "未選択"}
                 </div>
                 <div>
-                  <span className="font-medium">Scheduled:</span> {formData.scheduled ? `Yes (${formData.interval})` : "No"}
+                  <span className="font-medium">スケジュール:</span> {formData.scheduled ? `はい (${formData.interval === 'hourly' ? '毎時' : formData.interval === 'daily' ? '毎日' : formData.interval === 'weekly' ? '毎週' : formData.interval === 'monthly' ? '毎月' : formData.interval})` : "いいえ"}
                 </div>
                 {customSelectors.length > 0 && (
                   <div>
-                    <span className="font-medium">Selectors:</span> {customSelectors.length} custom rules
+                    <span className="font-medium">セレクタ:</span> {customSelectors.length} カスタムルール
                   </div>
                 )}
               </div>
@@ -244,17 +244,17 @@ export function JobCreator() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Actions</CardTitle>
+              <CardTitle>アクション</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <Button className="w-full" onClick={handleSubmit} data-testid="button-create-job">
-                Create Job
+ジョブ作成
               </Button>
               <Button variant="outline" className="w-full" data-testid="button-test-config">
-                Test Configuration
+設定テスト
               </Button>
               <Button variant="ghost" className="w-full" data-testid="button-save-template">
-                Save as Template
+テンプレートとして保存
               </Button>
             </CardContent>
           </Card>

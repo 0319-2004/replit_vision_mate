@@ -131,10 +131,10 @@ export function JobManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Scraping Jobs</h1>
-          <p className="text-muted-foreground">Manage and monitor your data extraction jobs</p>
+          <h1 className="text-3xl font-bold tracking-tight">スクレイピングジョブ</h1>
+          <p className="text-muted-foreground">データ抽出ジョブの管理と監視</p>
         </div>
-        <Button data-testid="button-create-new-job">Create New Job</Button>
+        <Button data-testid="button-create-new-job">新しいジョブ作成</Button>
       </div>
 
       {/* Filters and Search */}
@@ -144,7 +144,7 @@ export function JobManagement() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search jobs by name or source..."
+                placeholder="ジョブ名またはソースで検索..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
@@ -155,16 +155,16 @@ export function JobManagement() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" data-testid="button-filter-status">
                   <Filter className="mr-2 h-4 w-4" />
-                  Status: {selectedStatus === "all" ? "All" : selectedStatus}
+                  ステータス: {selectedStatus === "all" ? "すべて" : selectedStatus === "running" ? "実行中" : selectedStatus === "completed" ? "完了" : selectedStatus === "pending" ? "保留中" : selectedStatus === "failed" ? "失敗" : selectedStatus === "paused" ? "一時停止" : selectedStatus}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setSelectedStatus("all")}>All</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSelectedStatus("running")}>Running</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSelectedStatus("completed")}>Completed</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSelectedStatus("pending")}>Pending</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSelectedStatus("failed")}>Failed</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSelectedStatus("paused")}>Paused</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedStatus("all")}>すべて</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedStatus("running")}>実行中</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedStatus("completed")}>完了</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedStatus("pending")}>保留中</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedStatus("failed")}>失敗</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedStatus("paused")}>一時停止</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -174,22 +174,22 @@ export function JobManagement() {
       {/* Jobs Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Jobs Overview</CardTitle>
+          <CardTitle>ジョブ概要</CardTitle>
           <CardDescription>
-            {filteredJobs.length} of {jobs.length} jobs shown
+            {jobs.length}件中{filteredJobs.length}件を表示
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Job Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead>Source</TableHead>
-                <TableHead>Records</TableHead>
-                <TableHead>Schedule</TableHead>
-                <TableHead>Last Run</TableHead>
+                <TableHead>ジョブ名</TableHead>
+                <TableHead>ステータス</TableHead>
+                <TableHead>進捗</TableHead>
+                <TableHead>ソース</TableHead>
+                <TableHead>レコード</TableHead>
+                <TableHead>スケジュール</TableHead>
+                <TableHead>最終実行</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
@@ -198,12 +198,12 @@ export function JobManagement() {
                 <TableRow key={job.id} data-testid={`row-job-${job.id}`}>
                   <TableCell>
                     <div className="font-medium">{job.name}</div>
-                    <div className="text-xs text-muted-foreground">Created {job.created}</div>
+                    <div className="text-xs text-muted-foreground">作成 {job.created}</div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${getStatusColor(job.status)}`} />
-                      <Badge variant={getStatusVariant(job.status)}>{job.status}</Badge>
+                      <Badge variant={getStatusVariant(job.status)}>{job.status === 'running' ? '実行中' : job.status === 'completed' ? '完了' : job.status === 'pending' ? '保留中' : job.status === 'failed' ? '失敗' : job.status === 'paused' ? '一時停止' : job.status}</Badge>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -241,28 +241,28 @@ export function JobManagement() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleJobAction("view", job.id)}>
                           <Eye className="mr-2 h-4 w-4" />
-                          View Details
+                          詳細表示
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleJobAction("run", job.id)}>
                           <Play className="mr-2 h-4 w-4" />
-                          Run Now
+                          今すぐ実行
                         </DropdownMenuItem>
                         {job.status === "running" && (
                           <DropdownMenuItem onClick={() => handleJobAction("pause", job.id)}>
                             <Pause className="mr-2 h-4 w-4" />
-                            Pause
+                            一時停止
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuItem onClick={() => handleJobAction("export", job.id)}>
                           <Download className="mr-2 h-4 w-4" />
-                          Export Data
+                          データエクスポート
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => handleJobAction("delete", job.id)}
                           className="text-destructive"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
+                          削除
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -281,7 +281,7 @@ export function JobManagement() {
             <div className="text-2xl font-bold">
               {jobs.filter(j => j.status === "running").length}
             </div>
-            <div className="text-xs text-muted-foreground">Running Jobs</div>
+            <div className="text-xs text-muted-foreground">実行中ジョブ</div>
           </CardContent>
         </Card>
         <Card>
@@ -289,7 +289,7 @@ export function JobManagement() {
             <div className="text-2xl font-bold">
               {jobs.filter(j => j.status === "completed").length}
             </div>
-            <div className="text-xs text-muted-foreground">Completed</div>
+            <div className="text-xs text-muted-foreground">完了</div>
           </CardContent>
         </Card>
         <Card>
@@ -297,7 +297,7 @@ export function JobManagement() {
             <div className="text-2xl font-bold">
               {jobs.reduce((sum, job) => sum + job.recordsExtracted, 0).toLocaleString()}
             </div>
-            <div className="text-xs text-muted-foreground">Total Records</div>
+            <div className="text-xs text-muted-foreground">総レコード数</div>
           </CardContent>
         </Card>
         <Card>
@@ -305,7 +305,7 @@ export function JobManagement() {
             <div className="text-2xl font-bold">
               {Math.round((jobs.filter(j => j.status === "completed").length / jobs.length) * 100)}%
             </div>
-            <div className="text-xs text-muted-foreground">Success Rate</div>
+            <div className="text-xs text-muted-foreground">成功率</div>
           </CardContent>
         </Card>
       </div>

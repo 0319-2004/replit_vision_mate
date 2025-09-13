@@ -15,27 +15,27 @@ import {
 
 const mainItems = [
   {
-    title: "Home",
+    title: "ホーム",
     url: "/",
     icon: Home,
   },
   {
-    title: "Discover",
+    title: "発見",
     url: "/discover", 
     icon: Users,
   },
   {
-    title: "Messages",
+    title: "メッセージ",
     url: "/messages",
     icon: MessageCircle,
   },
   {
-    title: "Create Project",
+    title: "プロジェクト作成",
     url: "/projects/new",
     icon: Plus,
   },
   {
-    title: "My Projects",
+    title: "マイプロジェクト",
     url: "/projects/mine",
     icon: Folder,
   },
@@ -43,12 +43,12 @@ const mainItems = [
 
 const accountItems = [
   {
-    title: "Profile",
+    title: "プロフィール",
     url: "/profile",
     icon: User,
   },
   {
-    title: "Settings",
+    title: "設定",
     url: "/settings",
     icon: Settings,
   },
@@ -68,7 +68,7 @@ export function AppSidebar() {
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigate</SidebarGroupLabel>
+          <SidebarGroupLabel>ナビゲーション</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
@@ -86,7 +86,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="mt-auto">
-          <SidebarGroupLabel>Account</SidebarGroupLabel>
+          <SidebarGroupLabel>アカウント</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {accountItems.map((item) => (

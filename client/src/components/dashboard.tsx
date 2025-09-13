@@ -8,30 +8,30 @@ export function Dashboard() {
   // todo: remove mock functionality
   const metrics = [
     {
-      title: "Active Jobs",
+      title: "アクティブジョブ",
       value: "12",
-      change: "+3 from yesterday",
+      change: "昨日から+3",
       icon: Zap,
       trend: "up"
     },
     {
-      title: "Data Points Extracted",
+      title: "抽出データポイント",
       value: "1.2M",
-      change: "+180k this week",
+      change: "今週+180k",
       icon: Database,
       trend: "up"
     },
     {
-      title: "Success Rate",
+      title: "成功率",
       value: "98.5%",
-      change: "+0.3% this month",
+      change: "今月+0.3%",
       icon: TrendingUp,
       trend: "up"
     },
     {
-      title: "Avg Processing Time",
+      title: "平均処理時間",
       value: "2.3s",
-      change: "-0.5s improved",
+      change: "-0.5s改善",
       icon: Clock,
       trend: "down"
     }
@@ -41,7 +41,7 @@ export function Dashboard() {
   const recentJobs = [
     {
       id: "job-001",
-      name: "E-commerce Product Data",
+      name: "EC商品データ",
       status: "running",
       progress: 75,
       source: "amazon.com",
@@ -49,7 +49,7 @@ export function Dashboard() {
     },
     {
       id: "job-002",
-      name: "Social Media Analytics",
+      name: "SNS分析データ",
       status: "completed",
       progress: 100,
       source: "twitter.com",
@@ -57,7 +57,7 @@ export function Dashboard() {
     },
     {
       id: "job-003",
-      name: "News Articles Scrape",
+      name: "ニュース記事収集",
       status: "pending",
       progress: 0,
       source: "reddit.com",
@@ -101,10 +101,10 @@ export function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
-              Recent Jobs
+              最近のジョブ
             </CardTitle>
             <CardDescription>
-              Monitor your latest scraping operations
+              最新のスクレイピング操作を監視
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -114,17 +114,17 @@ export function Dashboard() {
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${getStatusColor(job.status)}`} />
                     <span className="font-medium text-sm">{job.name}</span>
-                    <Badge variant="secondary" className="text-xs">{job.status}</Badge>
+                    <Badge variant="secondary" className="text-xs">{job.status === 'running' ? '実行中' : job.status === 'completed' ? '完了' : job.status === 'pending' ? '保留中' : job.status}</Badge>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {job.source} • {job.recordsExtracted.toLocaleString()} records
+                    {job.source} • {job.recordsExtracted.toLocaleString()} 件
                   </div>
                   {job.status === "running" && (
                     <Progress value={job.progress} className="h-1 mt-2" />
                   )}
                 </div>
                 <Button variant="ghost" size="sm" data-testid={`button-view-${job.id}`}>
-                  View
+                  表示
                 </Button>
               </div>
             ))}
@@ -134,27 +134,27 @@ export function Dashboard() {
         {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>クイックアクション</CardTitle>
             <CardDescription>
-              Common tasks for data extraction
+              データ抽出の一般的なタスク
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button className="w-full justify-start" variant="outline" data-testid="button-new-web-scrape">
               <Zap className="mr-2 h-4 w-4" />
-              New Web Scrape
+              新しいWebスクレイピング
             </Button>
             <Button className="w-full justify-start" variant="outline" data-testid="button-social-extract">
               <Database className="mr-2 h-4 w-4" />
-              Social Media Extract
+              SNSデータ抽出
             </Button>
             <Button className="w-full justify-start" variant="outline" data-testid="button-bulk-export">
               <Download className="mr-2 h-4 w-4" />
-              Bulk Data Export
+              一括データエクスポート
             </Button>
             <Button className="w-full justify-start" variant="outline" data-testid="button-schedule-job">
               <Clock className="mr-2 h-4 w-4" />
-              Schedule Recurring Job
+              定期実行ジョブ設定
             </Button>
           </CardContent>
         </Card>

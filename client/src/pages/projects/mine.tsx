@@ -33,7 +33,7 @@ export default function MyProjectsPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading your projects...</p>
+          <p className="text-muted-foreground">あなたのプロジェクトを読み込み中...</p>
         </div>
       </div>
     );
@@ -43,15 +43,15 @@ export default function MyProjectsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">My Projects</h1>
+          <h1 className="text-3xl font-bold">マイプロジェクト</h1>
           <p className="text-muted-foreground mt-2">
-            Projects you've created to turn your visions into reality
+            あなたのビジョンを現実に変えるために作成したプロジェクト
           </p>
         </div>
         <Link href="/projects/new">
           <Button data-testid="button-create-project">
             <Plus className="w-4 h-4 mr-2" />
-            Create Project
+プロジェクト作成
           </Button>
         </Link>
       </div>
@@ -60,14 +60,14 @@ export default function MyProjectsPage() {
         <Card className="text-center py-12">
           <CardContent>
             <div className="max-w-md mx-auto">
-              <h3 className="text-lg font-medium mb-2">No projects yet</h3>
+              <h3 className="text-lg font-medium mb-2">まだプロジェクトがありません</h3>
               <p className="text-muted-foreground mb-6">
-                Ready to turn your vision into reality? Create your first project and start building your community.
+                あなたのビジョンを現実に変える準備はできましたか？最初のプロジェクトを作成し、コミュニティの構築を始めましょう。
               </p>
               <Link href="/projects/new">
                 <Button data-testid="button-create-first-project">
                   <Plus className="w-4 h-4 mr-2" />
-                  Create Your First Project
+最初のプロジェクトを作成
                 </Button>
               </Link>
             </div>
@@ -80,7 +80,7 @@ export default function MyProjectsPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <Badge variant={project.isActive ? "default" : "secondary"}>
-                    {project.isActive ? "Active" : "Inactive"}
+                    {project.isActive ? "アクティブ" : "非アクティブ"}
                   </Badge>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar className="w-3 h-3" />
@@ -121,7 +121,7 @@ export default function MyProjectsPage() {
                 <div className="mt-4 pt-4 border-t">
                   <Link href={`/projects/${project.id}`}>
                     <Button variant="outline" className="w-full" data-testid={`button-view-project-${project.id}`}>
-                      View Project
+  プロジェクトを表示
                     </Button>
                   </Link>
                 </div>

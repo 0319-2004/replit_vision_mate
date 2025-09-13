@@ -53,8 +53,8 @@ export default function DiscoverPage() {
         if (nextIndex >= projects.length) {
           // Show completion message and reset
           toast({
-            title: "You've seen all projects!",
-            description: "Check back later for new visions to discover.",
+            title: "すべてのプロジェクトを見ました！",
+            description: "新しいビジョンを発見するために、後でまたチェックしてください。",
           });
           return 0;
         }
@@ -90,7 +90,7 @@ export default function DiscoverPage() {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Finding amazing projects...</p>
+          <p className="text-muted-foreground">素晴らしいプロジェクトを探しています...</p>
         </div>
       </div>
     );
@@ -101,12 +101,12 @@ export default function DiscoverPage() {
       <div className="max-w-md mx-auto px-4 py-8">
         <Card>
           <CardContent className="py-12 text-center">
-            <h3 className="text-lg font-semibold mb-2">No projects to discover</h3>
+            <h3 className="text-lg font-semibold mb-2">発見するプロジェクトがありません</h3>
             <p className="text-muted-foreground mb-4">
-              Be the first to share your vision with the community!
+              あなたのビジョンをコミュニティと初めて共有しませんか！
             </p>
             <Link href="/projects/new">
-              <Button>Create First Project</Button>
+              <Button>最初のプロジェクトを作成</Button>
             </Link>
           </CardContent>
         </Card>
@@ -130,7 +130,7 @@ export default function DiscoverPage() {
           </Button>
         </Link>
         <div className="flex-1 text-center">
-          <h1 className="text-2xl font-bold">Discover</h1>
+          <h1 className="text-2xl font-bold">発見</h1>
           <p className="text-sm text-muted-foreground">
             {currentIndex + 1} of {projects.length}
           </p>
@@ -223,7 +223,7 @@ export default function DiscoverPage() {
 
       {/* Swipe Instructions */}
       <div className="text-center mt-6 text-sm text-muted-foreground">
-        <p>Swipe left to pass • Tap ❤️ to view • Swipe right to continue</p>
+        <p>左にスワイプでスキップ • ❤️タップで表示 • 右にスワイプで続ける</p>
       </div>
     </div>
   );
