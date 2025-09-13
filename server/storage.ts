@@ -105,30 +105,16 @@ export class DatabaseStorage implements IStorage {
         progressUpdates: {
           with: {
             user: true,
-            reactions: {
-              with: {
-                user: true,
-              },
-            },
           },
           orderBy: desc(progressUpdates.createdAt),
         },
         comments: {
           with: {
             user: true,
-            reactions: {
-              with: {
-                user: true,
-              },
-            },
           },
           orderBy: desc(comments.createdAt),
         },
-        reactions: {
-          with: {
-            user: true,
-          },
-        },
+        // Note: reactions are fetched separately due to polymorphic relationship
       },
     });
     

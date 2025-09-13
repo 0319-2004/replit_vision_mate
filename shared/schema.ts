@@ -97,7 +97,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   participations: many(participations),
   progressUpdates: many(progressUpdates),
   comments: many(comments),
-  reactions: many(reactions),
+  // Note: reactions are fetched separately due to polymorphic relationship
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -108,7 +108,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   participations: many(participations),
   progressUpdates: many(progressUpdates),
   comments: many(comments),
-  reactions: many(reactions),
+  // Note: reactions are fetched separately due to polymorphic relationship
 }));
 
 export const participationsRelations = relations(participations, ({ one }) => ({
@@ -122,7 +122,7 @@ export const participationsRelations = relations(participations, ({ one }) => ({
   }),
 }));
 
-export const progressUpdatesRelations = relations(progressUpdates, ({ one, many }) => ({
+export const progressUpdatesRelations = relations(progressUpdates, ({ one }) => ({
   project: one(projects, {
     fields: [progressUpdates.projectId],
     references: [projects.id],
@@ -131,10 +131,10 @@ export const progressUpdatesRelations = relations(progressUpdates, ({ one, many 
     fields: [progressUpdates.userId],
     references: [users.id],
   }),
-  reactions: many(reactions),
+  // Note: reactions are fetched separately due to polymorphic relationship
 }));
 
-export const commentsRelations = relations(comments, ({ one, many }) => ({
+export const commentsRelations = relations(comments, ({ one }) => ({
   project: one(projects, {
     fields: [comments.projectId],
     references: [projects.id],
@@ -143,7 +143,7 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
     fields: [comments.userId],
     references: [users.id],
   }),
-  reactions: many(reactions),
+  // Note: reactions are fetched separately due to polymorphic relationship
 }));
 
 export const reactionsRelations = relations(reactions, ({ one }) => ({
@@ -151,6 +151,8 @@ export const reactionsRelations = relations(reactions, ({ one }) => ({
     fields: [reactions.userId],
     references: [users.id],
   }),
+  // Note: For polymorphic relations, we can't directly define relations to projects/progressUpdates/comments
+  // The frontend will need to handle the targetId/targetType logic for fetching related data
 }));
 
 // Zod schemas for validation
@@ -210,7 +212,7 @@ export type InsertReaction = z.infer<typeof insertReactionSchema>;
 export type ProjectWithDetails = Project & {
   creator: User;
   participations: Participation[];
-  progressUpdates: (ProgressUpdate & { user: User; reactions: Reaction[] })[];
-  comments: (Comment & { user: User; reactions: Reaction[] })[];
-  reactions: Reaction[];
+  progressUpdates: (ProgressUpdate & { user: User })[];
+  comments: (Comment & { user: User })[];
+  // Note: reactions will be fetched separately when needed
 };

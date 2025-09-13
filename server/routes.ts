@@ -162,6 +162,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/projects/:id/progress', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      
+      // SECURITY: Check if user is the project creator
+      const project = await storage.getProject(req.params.id);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      if (project.creatorId !== userId) {
+        return res.status(403).json({ message: "Only the project creator can add progress updates" });
+      }
+      
       const updateData = insertProgressUpdateSchema.parse({
         ...req.body,
         projectId: req.params.id,

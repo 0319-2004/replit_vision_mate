@@ -6,7 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
+import { insertProgressUpdateSchema } from "@shared/schema";
+import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -26,12 +34,17 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import type { ProjectWithDetails, User as UserType } from "@shared/schema";
 
+// Form schema for progress updates
+const progressUpdateFormSchema = insertProgressUpdateSchema.omit({ projectId: true, userId: true });
+type ProgressUpdateFormData = z.infer<typeof progressUpdateFormSchema>;
+
 export default function ProjectDetailPage() {
   const [match, params] = useRoute("/projects/:id");
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const projectId = params?.id;
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
   const { data: project, isLoading } = useQuery<ProjectWithDetails>({
     queryKey: ["/api/projects", projectId],
@@ -92,6 +105,52 @@ export default function ProjectDetailPage() {
       }
     },
   });
+
+  const createProgressUpdateMutation = useMutation({
+    mutationFn: async (data: ProgressUpdateFormData) => {
+      const res = await apiRequest("POST", `/api/projects/${projectId}/progress`, data);
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
+      setIsUpdateModalOpen(false);
+      progressUpdateForm.reset(); // Clear form state after successful submission
+      toast({
+        title: "Progress update created!",
+        description: "Your progress update has been shared with the community.",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to create progress update. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const progressUpdateForm = useForm<ProgressUpdateFormData>({
+    resolver: zodResolver(progressUpdateFormSchema),
+    defaultValues: {
+      title: "",
+      content: "",
+    },
+  });
+
+  const handleCreateProgressUpdate = (data: ProgressUpdateFormData) => {
+    createProgressUpdateMutation.mutate(data);
+  };
 
   const handleParticipate = (type: string) => {
     const existingParticipation = project?.participations?.find(
@@ -229,10 +288,78 @@ export default function ProjectDetailPage() {
               <div className="flex justify-between items-center">
                 <CardTitle>Progress Updates</CardTitle>
                 {isCreator && (
-                  <Button size="sm" data-testid="button-add-update">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Update
-                  </Button>
+                  <Dialog open={isUpdateModalOpen} onOpenChange={setIsUpdateModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm" data-testid="button-add-update">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Update
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Progress Update</DialogTitle>
+                        <DialogDescription>
+                          Share your latest progress with the community. This will help keep everyone engaged and motivated!
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Form {...progressUpdateForm}>
+                        <form onSubmit={progressUpdateForm.handleSubmit(handleCreateProgressUpdate)} className="space-y-4">
+                          <FormField
+                            control={progressUpdateForm.control}
+                            name="title"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Update Title</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="e.g., Completed user interface design"
+                                    data-testid="input-update-title"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={progressUpdateForm.control}
+                            name="content"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Description</FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder="Describe what you've accomplished, any challenges you faced, and next steps..."
+                                    rows={4}
+                                    data-testid="input-update-content"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={() => setIsUpdateModalOpen(false)}
+                              data-testid="button-cancel-update"
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              type="submit" 
+                              disabled={createProgressUpdateMutation.isPending}
+                              data-testid="button-submit-update"
+                            >
+                              {createProgressUpdateMutation.isPending ? "Creating..." : "Create Update"}
+                            </Button>
+                          </div>
+                        </form>
+                      </Form>
+                    </DialogContent>
+                  </Dialog>
                 )}
               </div>
             </CardHeader>
