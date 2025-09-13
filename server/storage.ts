@@ -5,6 +5,8 @@ import {
   progressUpdates,
   comments,
   reactions,
+  conversations,
+  messages,
   type User,
   type UpsertUser,
   type PublicUser,
@@ -18,7 +20,13 @@ import {
   type InsertComment,
   type Reaction,
   type InsertReaction,
+  type Conversation,
+  type InsertConversation,
+  type Message,
+  type InsertMessage,
   type ProjectWithDetails,
+  type ConversationWithMessages,
+  type MessageWithSender,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, inArray } from "drizzle-orm";
@@ -28,6 +36,8 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  getPublicProfile(id: string): Promise<Omit<User, 'email'> | undefined>;
+  updateUserProfile(id: string, updates: { displayName?: string | null; bio?: string | null; skills?: string[]; githubUrl?: string | null; portfolioUrl?: string | null }): Promise<User>;
   
   // Project operations
   createProject(project: InsertProject): Promise<Project>;
@@ -59,6 +69,13 @@ export interface IStorage {
   addReaction(reaction: InsertReaction): Promise<Reaction>;
   removeReaction(targetId: string, targetType: string, userId: string): Promise<void>;
   getReactions(targetId: string, targetType: string): Promise<Reaction[]>;
+  
+  // Messaging/DM operations
+  createOrGetConversation(participant1Id: string, participant2Id: string): Promise<Conversation>;
+  getUserConversations(userId: string): Promise<ConversationWithMessages[]>;
+  getConversation(conversationId: string, userId: string): Promise<ConversationWithMessages | undefined>;
+  sendMessage(message: InsertMessage): Promise<MessageWithSender>;
+  markMessagesAsRead(conversationId: string, userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -79,6 +96,36 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date(),
         },
       })
+      .returning();
+    return user;
+  }
+
+  async getPublicProfile(id: string): Promise<Omit<User, 'email'> | undefined> {
+    const [user] = await db.select({
+      id: users.id,
+      firstName: users.firstName,
+      lastName: users.lastName,
+      displayName: users.displayName,
+      bio: users.bio,
+      skills: users.skills,
+      githubUrl: users.githubUrl,
+      portfolioUrl: users.portfolioUrl,
+      avatarUrl: users.avatarUrl,
+      profileImageUrl: users.profileImageUrl,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    }).from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async updateUserProfile(id: string, updates: { displayName?: string | null; bio?: string | null; skills?: string[]; githubUrl?: string | null; portfolioUrl?: string | null }): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id))
       .returning();
     return user;
   }
@@ -325,6 +372,124 @@ export class DatabaseStorage implements IStorage {
         and(
           eq(reactions.targetId, targetId),
           eq(reactions.targetType, targetType)
+        )
+      );
+  }
+
+  // Messaging/DM operations
+  async createOrGetConversation(participant1Id: string, participant2Id: string): Promise<Conversation> {
+    // Ensure consistent ordering: smaller ID comes first
+    const [orderedId1, orderedId2] = participant1Id < participant2Id 
+      ? [participant1Id, participant2Id] 
+      : [participant2Id, participant1Id];
+
+    // Try to find existing conversation
+    let [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(
+        and(
+          eq(conversations.participant1Id, orderedId1),
+          eq(conversations.participant2Id, orderedId2)
+        )
+      );
+
+    // Create new conversation if none exists
+    if (!conversation) {
+      [conversation] = await db
+        .insert(conversations)
+        .values({
+          participant1Id: orderedId1,
+          participant2Id: orderedId2,
+        })
+        .returning();
+    }
+
+    return conversation;
+  }
+
+  async getUserConversations(userId: string): Promise<ConversationWithMessages[]> {
+    const userConversations = await db.query.conversations.findMany({
+      where: (conversations, { or, eq }) => 
+        or(
+          eq(conversations.participant1Id, userId),
+          eq(conversations.participant2Id, userId)
+        ),
+      with: {
+        participant1: true,
+        participant2: true,
+        messages: {
+          with: {
+            sender: true,
+          },
+          orderBy: desc(messages.createdAt),
+          limit: 1, // Just get the latest message for conversation list
+        },
+      },
+      orderBy: desc(conversations.lastMessageAt),
+    });
+
+    return userConversations;
+  }
+
+  async getConversation(conversationId: string, userId: string): Promise<ConversationWithMessages | undefined> {
+    const conversation = await db.query.conversations.findFirst({
+      where: (conversations, { and, eq, or }) =>
+        and(
+          eq(conversations.id, conversationId),
+          or(
+            eq(conversations.participant1Id, userId),
+            eq(conversations.participant2Id, userId)
+          )
+        ),
+      with: {
+        participant1: true,
+        participant2: true,
+        messages: {
+          with: {
+            sender: true,
+          },
+          orderBy: desc(messages.createdAt),
+          limit: 50, // Get last 50 messages
+        },
+      },
+    });
+
+    return conversation;
+  }
+
+  async sendMessage(messageData: InsertMessage): Promise<MessageWithSender> {
+    // Send the message
+    const [message] = await db
+      .insert(messages)
+      .values(messageData)
+      .returning();
+
+    // Update conversation last message timestamp
+    await db
+      .update(conversations)
+      .set({ lastMessageAt: new Date() })
+      .where(eq(conversations.id, messageData.conversationId));
+
+    // Fetch message with sender info
+    const messageWithSender = await db.query.messages.findFirst({
+      where: eq(messages.id, message.id),
+      with: {
+        sender: true,
+      },
+    });
+
+    return messageWithSender!;
+  }
+
+  async markMessagesAsRead(conversationId: string, userId: string): Promise<void> {
+    await db
+      .update(messages)
+      .set({ isRead: true })
+      .where(
+        and(
+          eq(messages.conversationId, conversationId),
+          eq(messages.isRead, false)
         )
       );
   }

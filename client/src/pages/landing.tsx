@@ -1,8 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, Hand, Rocket, Users, Clock, Share } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Eye, Hand, Rocket, Users, Clock, Share, AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function LandingPage() {
+  const [domainError, setDomainError] = useState(false);
+
+  useEffect(() => {
+    // Check for domain error in URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('error') === 'domain_not_allowed') {
+      setDomainError(true);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -22,6 +35,21 @@ export default function LandingPage() {
           </Button>
         </div>
       </header>
+
+      {/* Domain Error Alert */}
+      {domainError && (
+        <div className="max-w-4xl mx-auto px-4 pt-8">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>アクセス制限 / Access Restricted</AlertTitle>
+            <AlertDescription>
+              このアプリケーションは青山学院大学のメールアドレス（@aoyama.ac.jp または @aoyama.jp）でのみご利用いただけます。
+              <br /><br />
+              This application is only available for Aoyama Gakuin University email addresses (@aoyama.ac.jp or @aoyama.jp).
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="py-20 px-4">

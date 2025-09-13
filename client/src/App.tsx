@@ -18,6 +18,10 @@ import DiscoverPage from "@/pages/discover";
 import CreateProjectPage from "@/pages/projects/new";
 import MyProjectsPage from "@/pages/projects/mine";
 import ProjectDetailPage from "@/pages/projects/[id]";
+import ProfilePage from "@/pages/profile/index";
+import ProfileEditPage from "@/pages/profile/edit";
+import PublicProfilePage from "@/pages/profile/[id]";
+import MessagesPage from "@/pages/messages/index";
 import NotFound from "@/pages/not-found";
 
 function AuthenticatedRouter() {
@@ -28,7 +32,10 @@ function AuthenticatedRouter() {
       <Route path="/projects/new" component={CreateProjectPage} />
       <Route path="/projects/mine" component={MyProjectsPage} />
       <Route path="/projects/:id" component={ProjectDetailPage} />
-      {/* Additional authenticated routes will go here */}
+      <Route path="/profile" component={ProfilePage} />
+      <Route path="/profile/edit" component={ProfileEditPage} />
+      <Route path="/profile/:id" component={PublicProfilePage} />
+      <Route path="/messages" component={MessagesPage} />
       <Route component={NotFound} />
     </Switch>
   );

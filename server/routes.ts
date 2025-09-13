@@ -2,12 +2,14 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { validateDomainMiddleware } from "./utils/domainValidation";
 import { 
   insertProjectSchema,
   insertProgressUpdateSchema,
   insertCommentSchema,
   insertReactionSchema,
   reactionRequestSchema,
+  messageRequestSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -15,7 +17,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
 
   // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -23,6 +25,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Profile routes
+  app.get('/api/profile/:id', async (req, res) => {
+    try {
+      const user = await storage.getPublicProfile(req.params.id);
+      if (!user) {
+        return res.status(404).json({ message: "Profile not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching public profile:", error);
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  app.put('/api/profile', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { displayName, bio, skills, githubUrl, portfolioUrl } = req.body;
+
+      // Basic validation
+      if (displayName && displayName.length > 100) {
+        return res.status(400).json({ message: "Display name too long" });
+      }
+      if (bio && bio.length > 500) {
+        return res.status(400).json({ message: "Bio too long" });
+      }
+      if (skills && (!Array.isArray(skills) || skills.length > 10)) {
+        return res.status(400).json({ message: "Invalid skills format or too many skills" });
+      }
+
+      const updatedProfile = await storage.updateUserProfile(userId, {
+        displayName: displayName || null,
+        bio: bio || null, 
+        skills: skills || [],
+        githubUrl: githubUrl || null,
+        portfolioUrl: portfolioUrl || null,
+      });
+
+      res.json(updatedProfile);
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
     }
   });
 
@@ -61,7 +108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/projects', isAuthenticated, async (req: any, res) => {
+  app.post('/api/projects', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const projectData = insertProjectSchema.parse({
@@ -80,7 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/projects/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/projects/:id', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const project = await storage.getProject(req.params.id);
@@ -105,7 +152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/projects/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/projects/:id', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const project = await storage.getProject(req.params.id);
@@ -127,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Participation routes
-  app.post('/api/projects/:id/participate', isAuthenticated, async (req: any, res) => {
+  app.post('/api/projects/:id/participate', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { type } = req.body; // 'watch', 'raise_hand', 'commit'
@@ -154,7 +201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/projects/:id/participate', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/projects/:id/participate', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { type } = req.body;
@@ -172,7 +219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Progress update routes
-  app.post('/api/projects/:id/progress', isAuthenticated, async (req: any, res) => {
+  app.post('/api/projects/:id/progress', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -204,7 +251,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Comment routes
-  app.post('/api/projects/:id/comments', isAuthenticated, async (req: any, res) => {
+  app.post('/api/projects/:id/comments', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const commentData = insertCommentSchema.parse({
@@ -225,6 +272,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Reaction routes
+  // Get reaction status for a specific target
+  app.get('/api/reactions/:targetType/:targetId', async (req, res) => {
+    try {
+      const { targetId, targetType } = req.params;
+      
+      // Validate targetType
+      if (!['project', 'progress_update', 'comment', 'message'].includes(targetType)) {
+        return res.status(400).json({ message: "Target type must be one of: project, progress_update, comment, message" });
+      }
+      
+      // Get all reactions for this target
+      const reactions = await storage.getReactions(targetId, targetType);
+      const totalCount = reactions.length;
+      
+      // If user is authenticated, check if they reacted
+      let userReacted = false;
+      if ((req as any).user) {
+        const userId = (req as any).user.claims.sub;
+        userReacted = reactions.some(r => r.userId === userId);
+      }
+      
+      res.json({ count: totalCount, userReacted });
+    } catch (error) {
+      console.error("Error fetching reaction status:", error);
+      res.status(500).json({ message: "Failed to fetch reaction status" });
+    }
+  });
+
   app.get('/api/reactions', async (req, res) => {
     try {
       const { targetId, targetType } = req.query;
@@ -249,7 +324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/reactions', isAuthenticated, async (req: any, res) => {
+  app.post('/api/reactions', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -319,6 +394,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.status(500).json({ message: "Failed to toggle reaction" });
+    }
+  });
+
+  // Messaging/DM routes
+  // Get user's conversations
+  app.get('/api/conversations', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const conversations = await storage.getUserConversations(userId);
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
+  // Get specific conversation with messages
+  app.get('/api/conversations/:id', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const conversation = await storage.getConversation(req.params.id, userId);
+      
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      // Mark messages as read
+      await storage.markMessagesAsRead(req.params.id, userId);
+
+      res.json(conversation);
+    } catch (error) {
+      console.error("Error fetching conversation:", error);
+      res.status(500).json({ message: "Failed to fetch conversation" });
+    }
+  });
+
+  // Send message (creates conversation if doesn't exist)
+  app.post('/api/messages', isAuthenticated, validateDomainMiddleware, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { content, recipientId } = messageRequestSchema.parse(req.body);
+
+      // Prevent messaging oneself
+      if (userId === recipientId) {
+        return res.status(400).json({ message: "Cannot send message to yourself" });
+      }
+
+      // Verify recipient exists
+      const recipient = await storage.getUser(recipientId);
+      if (!recipient) {
+        return res.status(404).json({ message: "Recipient not found" });
+      }
+
+      // Create or get conversation
+      const conversation = await storage.createOrGetConversation(userId, recipientId);
+
+      // Send message
+      const message = await storage.sendMessage({
+        conversationId: conversation.id,
+        senderId: userId,
+        content,
+      });
+
+      res.status(201).json(message);
+    } catch (error: any) {
+      console.error("Error sending message:", error);
+      
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Invalid message data", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ message: "Failed to send message" });
     }
   });
 

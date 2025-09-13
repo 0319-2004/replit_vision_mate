@@ -1,4 +1,4 @@
-import { Home, Users, Plus, Folder, User, Settings, Rocket } from "lucide-react"
+import { Home, Users, Plus, Folder, User, Settings, Rocket, MessageCircle } from "lucide-react"
 import { Link } from "wouter"
 
 import {
@@ -23,6 +23,11 @@ const mainItems = [
     title: "Discover",
     url: "/discover", 
     icon: Users,
+  },
+  {
+    title: "Messages",
+    url: "/messages",
+    icon: MessageCircle,
   },
   {
     title: "Create Project",

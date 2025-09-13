@@ -7,6 +7,7 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
+import { isAllowedDomain, getDomainErrorMessage } from "./utils/domainValidation";
 
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
@@ -58,6 +59,11 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
+  // Validate domain before creating/updating user
+  if (!isAllowedDomain(claims["email"])) {
+    throw new Error(`DOMAIN_NOT_ALLOWED: ${getDomainErrorMessage()}`);
+  }
+
   await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
@@ -79,10 +85,19 @@ export async function setupAuth(app: Express) {
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
     verified: passport.AuthenticateCallback
   ) => {
-    const user = {};
-    updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
-    verified(null, user);
+    try {
+      const user = {};
+      updateUserSession(user, tokens);
+      await upsertUser(tokens.claims());
+      verified(null, user);
+    } catch (error: any) {
+      if (error.message.startsWith('DOMAIN_NOT_ALLOWED:')) {
+        // Pass the domain error to the callback
+        verified(new Error('DOMAIN_NOT_ALLOWED'), null);
+      } else {
+        verified(error, null);
+      }
+    }
   };
 
   for (const domain of process.env
@@ -110,9 +125,23 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
+    passport.authenticate(`replitauth:${req.hostname}`, (err: any, user: any) => {
+      if (err) {
+        if (err.message === 'DOMAIN_NOT_ALLOWED') {
+          // Redirect to login with error parameter
+          return res.redirect("/?error=domain_not_allowed");
+        }
+        return res.redirect("/api/login");
+      }
+      if (!user) {
+        return res.redirect("/api/login");
+      }
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          return res.redirect("/api/login");
+        }
+        return res.redirect("/");
+      });
     })(req, res, next);
   });
 

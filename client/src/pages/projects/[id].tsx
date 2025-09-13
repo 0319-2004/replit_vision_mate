@@ -18,6 +18,7 @@ import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { ClapButton, HeroClapButton, CompactClapButton } from "@/components/clap-button";
 import { 
   ArrowLeft, 
   Eye, 
@@ -391,7 +392,15 @@ export default function ProjectDetailPage() {
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold mb-2">{project.title}</h1>
+          <div className="flex items-start justify-between mb-4">
+            <h1 className="text-3xl font-bold">{project.title}</h1>
+            <HeroClapButton 
+              targetId={project.id}
+              targetType="project"
+              initialCount={0}
+              initialUserReacted={false}
+            />
+          </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Avatar className="h-6 w-6">
