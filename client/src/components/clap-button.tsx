@@ -52,8 +52,38 @@ export function ClapButton({
         targetType,
       });
     },
+    onMutate: async () => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['/api/reactions', targetType, targetId] });
+      
+      // Snapshot the previous value
+      const previousData = queryClient.getQueryData(['/api/reactions', targetType, targetId]);
+      
+      // Optimistically update
+      const currentReacted = previousData?.userReacted || false;
+      const currentCount = previousData?.count || 0;
+      
+      queryClient.setQueryData(['/api/reactions', targetType, targetId], {
+        count: currentReacted ? currentCount - 1 : currentCount + 1,
+        userReacted: !currentReacted,
+      });
+      
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      if (context?.previousData) {
+        queryClient.setQueryData(['/api/reactions', targetType, targetId], context.previousData);
+      }
+      
+      toast({
+        title: "エラー / Error",
+        description: "Failed to clap",
+        variant: "destructive",
+      });
+    },
     onSuccess: (data: any) => {
-      // Update the cache with the new status
+      // Update with server response
       queryClient.setQueryData(
         ['/api/reactions', targetType, targetId],
         { count: data.count, userReacted: data.userReacted }
@@ -71,13 +101,6 @@ export function ClapButton({
           duration: 2000,
         });
       }
-    },
-    onError: (error: any) => {
-      toast({
-        title: "エラー / Error",
-        description: error.message || "Failed to clap",
-        variant: "destructive",
-      });
     },
   });
 
