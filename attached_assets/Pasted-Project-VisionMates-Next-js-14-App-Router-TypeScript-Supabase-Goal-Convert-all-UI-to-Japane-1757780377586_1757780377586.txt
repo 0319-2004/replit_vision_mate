@@ -1,0 +1,170 @@
+Project: VisionMates (Next.js 14 + App Router, TypeScript, Supabase)
+Goal:
+
+Convert all UI to Japanese by default with JA/EN toggle (i18n).
+
+Implement features below (MVP-ready).
+
+Enforce Aoyama Gakuin domain restriction + safety (RLS, rate limits, reports).
+
+Repo: <paste your GitHub URL>
+Env: .env.local already has Supabase URL/ANON. Keep existing keys.
+
+Scope
+
+i18n (JA default, EN optional)
+
+Use next-intl (or react-i18next) with App Router.
+
+Extract all hardcoded strings to /messages/ja.json and /messages/en.json.
+
+Add a LanguageToggle in the navbar. Persist selection in localStorage('vm_lang').
+
+Acceptance: All primary pages (Home/Project/Profile/Login/Forms/Report UI) show JA by default and switch to EN instantly.
+
+Domain allow-list (Aoyama Gakuin) + safety
+
+Allowed: *.aoyama.ac.jp and aoyama.jp.
+
+On sign-in, if email domain not allowed → signOut and show a clear error toast.
+
+Guard protected routes via middleware.ts.
+
+Add RLS policies so reads/writes require auth.email() to match the allow-list and auth.uid() = user_id for self-updates.
+
+Rate-limit comments/progress inserts: max 1 per 30s per user (server-side check).
+
+Env example:
+
+ALLOWED_EMAIL_DOMAIN_PATTERNS=/(^|\\.)aoyama\\.ac\\.jp$/i,/(^|\\.)aoyama\\.jp$/i
+
+
+Acceptance: Non-allowed emails are blocked at auth and DB level. Rapid repeats are rejected.
+
+Profile
+
+Edit page /profile and public page /u/[id].
+
+Fields: display_name, bio, skills (string array), links (github, portfolio), avatar (Supabase Storage avatars).
+
+Acceptance: Edit → Save → Public page updates immediately (i18n labels/validation included).
+
+Streak & 👏 Reactions
+
+progress_updates table already used; add RPC get_user_streak(user_id) to compute daily streak.
+
+Add claps(update_id, user_id) with unique constraint (1 clap per user).
+
+Show clap count & my-clap state on timeline; show streak on profile (numeric is fine).
+
+Acceptance: Works for two test users.
+
+Discovery (explore)
+
+/explore or /discover:
+
+Recommended projects (match user skills ↔ project tags).
+
+Weekly ranking (sum of 👀 watch + ✋ raise + 🚀 commit + 👏 within current week).
+
+Tag search with cloud and sorting (recent activity / most intent / newest).
+
+Acceptance: Search & sort work, SSR/CSR OK.
+
+Share link (basic)
+
+On project page, “Copy link” button.
+
+Utility buildProjectShareUrl(projectId, refUserId?) to optionally append ?ref=<user_id>.
+
+Acceptance: Clipboard copy with toast.
+
+DM / Group chat (MVP)
+
+Tables: conversations, conversation_members, messages, message_mentions.
+
+1:1 and small groups (≤20).
+
+Read receipts (store last_read_message_id per member), @mentions (@display_name parsing), image preview (Storage).
+
+Realtime subscribe to messages.
+
+UI at /messages: left list + right thread.
+
+Acceptance: Two users can DM, see read status, send an image, mention highlights the recipient.
+
+Moderation
+
+reports(resource_type, resource_id, reporter_id, reason) + admin page listing reported items.
+
+New users restricted for 24h (links/images blocked). Server-side guard too.
+
+Acceptance: Report appears in admin list; restriction prevents posting.
+
+Weekly digest (email)
+
+Supabase Scheduled Function (weekly):
+
+New progress in followed/watched projects
+
+Top 3 projects of the week
+
+User setting to enable/disable.
+
+Acceptance: Manual trigger sends a test email.
+
+Inline translation (JP⇄EN)
+
+Add lib/translate.ts with translate(text, targetLang) interface.
+
+For now stub/mock, later switch to DeepL/OpenAI via env keys.
+
+“Translate” button on comments/progress to toggle original/translated text.
+
+Acceptance: Button shows a translated stub now; swapping provider via env works later.
+
+DB (Supabase) additions (if missing)
+
+profiles(id uuid pk references auth.users, display_name text, bio text, skills text[] default '{}', github_url text, portfolio_url text, avatar_url text, created_at timestamptz default now())
+
+claps(id uuid pk, update_id uuid, user_id uuid, created_at, unique(update_id, user_id))
+
+conversations, conversation_members(last_read_message_id), messages(text,image_url), message_mentions
+
+reports(...)
+
+RLS policies per above; rate-limit checks on insert.
+
+Deliverables
+
+Branch: feature/i18n-and-core-addons
+
+Readme updates (env, setup, test instructions)
+
+i18n key map (messages/ja.json, messages/en.json)
+
+Test checklist
+
+i18n default JA + toggle to EN, all major pages covered.
+
+Non-Aoyama email blocked (auth + RLS).
+
+30s spam blocked.
+
+Profile edit/public view OK.
+
+Streak & claps working.
+
+Explore: recommend/ranking/tag search OK.
+
+Share link copies.
+
+DM: send/receive, read receipts, image preview, mentions.
+
+Reports/admin & 24h restriction enforced.
+
+Weekly digest manual run sends email.
+
+Inline translation button toggles text.
+
+If something is unclear, split into PRs in this order: i18n → safety (domain/RLS/rate) → profile → streak/claps → discovery → share → DM → moderation → digest → translation.

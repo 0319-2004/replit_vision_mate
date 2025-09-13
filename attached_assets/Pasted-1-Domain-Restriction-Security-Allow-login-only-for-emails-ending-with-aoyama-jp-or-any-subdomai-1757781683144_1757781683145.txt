@@ -1,0 +1,97 @@
+1. Domain Restriction & Security
+
+Allow login only for emails ending with @aoyama.jp or any subdomain of aoyama.ac.jp.
+
+Enforce on both client (UI error message) and server (middleware + RLS in Supabase).
+
+Add a simple report button (e.g., under each progress post) that creates a record in a new reports table.
+
+Add rate limiting for posting progress/comments to prevent spam (per user_id + IP).
+
+2. Profiles
+
+Expand user profile to include: name, bio, skills[], external links (GitHub, Portfolio), and avatar (upload to Supabase Storage).
+
+Create a profile edit page.
+
+Ensure avatars are stored securely (RLS: only owner can write, signed URL for public access).
+
+3. Streaks & 👏 Reactions
+
+Show user’s posting streak (continuous days of progress posts).
+
+Add 👏 reaction to progress posts (one per user, can undo).
+
+Show count next to each post.
+
+4. Discovery & Ranking
+
+Add a Discover page tab with:
+
+Recommended projects (based on tags the user watched/joined).
+
+Weekly ranking (most watched/joined/posted projects in last 7 days).
+
+Tag search + sorting (latest / most active).
+
+5. Invite Links
+
+Add a “Share Project” section in project detail:
+
+Copy link, Share to LINE, LinkedIn, Instagram.
+
+For now just share the plain URL, but prepare code to support ?ref=USER_ID later.
+
+6. Onboarding
+
+When a new user logs in for the first time:
+
+Prompt to set up their profile.
+
+Show 3 sample projects and encourage 👀 watch or 👏 react.
+
+7. Weekly Digest (Basic)
+
+Add a weekly job (or cron-like API route) that logs “Top 5 active projects” and “Followed project updates.”
+
+For now just print to console — email/LINE integration can be added later.
+
+8. Moderation
+
+Add admin-only page that lists all reports for review.
+
+Allow admin to mark them as resolved or delete offending posts.
+
+Add a rule to block new users from posting links for the first 24h.
+
+9. Follow & Personalized Feed
+
+Allow users to follow other users.
+
+Add a timeline page showing progress posts only from followed users.
+
+10. i18n (Japanese + English)
+
+Add next-i18next or similar to support both Japanese and English.
+
+Default language = Japanese, but allow toggle in navbar.
+
+Deliverables:
+
+Updated Next.js pages/components for these features
+
+New Supabase tables & RLS policies (reports, follows, progress_likes, etc.)
+
+Secure middleware.ts for domain checks
+
+Minimal styling consistent with current UI
+
+Ensure everything still works on local dev (npm run dev)
+
+Important:
+
+Do not break existing features.
+
+Focus on minimal working implementation (MVP).
+
+Comment the code where new functionality is added.
