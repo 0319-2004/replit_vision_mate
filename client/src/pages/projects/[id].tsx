@@ -30,6 +30,7 @@ import {
   User,
   Users,
   Heart,
+  HandHeart,
   Plus
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -56,17 +57,16 @@ function ProgressUpdateCard({
   toggleReactionMutation: any
 }) {
   const { data: updateReactionsData } = useQuery({
-    queryKey: ["/api/reactions", update.id, "progress_update"],
+    queryKey: ["/api/reactions", "progress_update", update.id],
     queryFn: async () => {
-      const res = await fetch(`/api/reactions?targetId=${update.id}&targetType=progress_update`);
+      const res = await fetch(`/api/reactions/progress_update/${update.id}`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch reactions');
       return await res.json();
     },
   });
   
-  const updateReactions = updateReactionsData?.reactions || [];
-
-  const userHasReacted = updateReactions.some((r: any) => r.userId === (user as UserType)?.id);
+  const updateReactionCount = updateReactionsData?.count || 0;
+  const userHasReacted = updateReactionsData?.userReacted || false;
 
   return (
     <div className="border-l-2 border-primary pl-4 pb-4">
@@ -85,16 +85,13 @@ function ProgressUpdateCard({
       <p className="text-muted-foreground mb-3">{update.content}</p>
       {user && (
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant={userHasReacted ? "default" : "outline"}
-            onClick={() => onToggleReaction(update.id, "progress_update")}
-            disabled={toggleReactionMutation.isPending}
+          <CompactClapButton
+            targetId={update.id}
+            targetType="progress_update"
+            initialCount={updateReactionCount}
+            initialUserReacted={userHasReacted}
             data-testid={`button-reaction-update-${update.id}`}
-            className="h-7 px-2 text-xs"
-          >
-            👏 {updateReactions.length}
-          </Button>
+          />
         </div>
       )}
     </div>
@@ -117,16 +114,17 @@ export default function ProjectDetailPage() {
 
   // Query for reactions
   const { data: projectReactionsData } = useQuery({
-    queryKey: ["/api/reactions", projectId, "project"],
+    queryKey: ["/api/reactions", "project", projectId],
     queryFn: async () => {
-      const res = await fetch(`/api/reactions?targetId=${projectId}&targetType=project`);
+      const res = await fetch(`/api/reactions/project/${projectId}`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch reactions');
       return await res.json();
     },
     enabled: !!projectId,
   });
   
-  const projectReactions = projectReactionsData?.reactions || [];
+  const projectReactionCount = projectReactionsData?.count || 0;
+  const projectUserReacted = projectReactionsData?.userReacted || false;
 
   const participateMutation = useMutation({
     mutationFn: async ({ type }: { type: string }) => {
@@ -258,10 +256,10 @@ export default function ProjectDetailPage() {
     },
     onSuccess: (_, { targetId, targetType }) => {
       // Invalidate specific reaction queries based on target type
-      queryClient.invalidateQueries({ queryKey: ["/api/reactions", targetId, targetType] });
+      queryClient.invalidateQueries({ queryKey: ["/api/reactions", targetType, targetId] });
       // Also invalidate project reactions if this was a project reaction
       if (targetType === "project") {
-        queryClient.invalidateQueries({ queryKey: ["/api/reactions", projectId, "project"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/reactions", "project", projectId] });
       }
     },
     onError: (error: Error) => {
@@ -420,15 +418,13 @@ export default function ProjectDetailPage() {
         <div className="flex gap-2">
           {/* Reactions Button */}
           {user && (
-            <Button
-              variant={projectReactions.some((r: any) => r.userId === (user as UserType)?.id) ? "default" : "outline"}
-              onClick={() => handleToggleReaction(projectId!, "project")}
-              disabled={toggleReactionMutation.isPending}
+            <ClapButton
+              targetId={projectId!}
+              targetType="project"
+              initialCount={projectReactionCount}
+              initialUserReacted={projectUserReacted}
               data-testid="button-toggle-reaction"
-            >
-              <Hand className="w-4 h-4 mr-2" />
-              👏 {projectReactions.length}
-            </Button>
+            />
           )}
           <Button 
             variant="outline" 
