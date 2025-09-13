@@ -17,12 +17,12 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
-import type { Project, User as UserType } from "@shared/schema";
+import type { Project, PublicUser } from "@shared/schema";
 import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
 
-// Extended project type with creator info
+// Extended project type with safe creator info (no private data)
 type ProjectWithCreator = Project & {
-  creator: UserType;
+  creator: PublicUser;
   participations?: Array<{ type: string; userId: string }>;
 };
 
@@ -37,7 +37,7 @@ export default function DiscoverPage() {
   const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
 
   const { data: projects = [], isLoading } = useQuery<ProjectWithCreator[]>({
-    queryKey: ["/api/projects"],
+    queryKey: ["/api/projects/discover"],
   });
 
   // Get current project
@@ -158,12 +158,12 @@ export default function DiscoverPage() {
                 <Avatar>
                   <AvatarImage src={currentProject.creator.profileImageUrl || undefined} />
                   <AvatarFallback>
-                    {currentProject.creator.firstName?.[0] || currentProject.creator.email?.[0] || 'U'}
+                    {currentProject.creator.firstName?.[0] || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <p className="font-medium text-sm">
-                    {currentProject.creator.firstName || currentProject.creator.email}
+                    {currentProject.creator.firstName || 'Anonymous Creator'}
                   </p>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Calendar className="w-3 h-3" />

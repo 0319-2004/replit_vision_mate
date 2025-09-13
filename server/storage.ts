@@ -7,6 +7,7 @@ import {
   reactions,
   type User,
   type UpsertUser,
+  type PublicUser,
   type Project,
   type InsertProject,
   type Participation,
@@ -20,7 +21,7 @@ import {
   type ProjectWithDetails,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, inArray } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -33,6 +34,8 @@ export interface IStorage {
   getProject(id: string): Promise<Project | undefined>;
   getProjectWithDetails(id: string): Promise<ProjectWithDetails | undefined>;
   getAllProjects(): Promise<Project[]>;
+  getAllProjectsWithCreators(): Promise<Array<Project & { creator: User; participations: Participation[] }>>;
+  getAllProjectsForDiscover(): Promise<Array<Project & { creator: PublicUser; participations: Participation[] }>>;
   updateProject(id: string, updates: Partial<InsertProject>): Promise<Project>;
   deleteProject(id: string): Promise<void>;
   
@@ -127,6 +130,67 @@ export class DatabaseStorage implements IStorage {
       .from(projects)
       .where(eq(projects.isActive, true))
       .orderBy(desc(projects.createdAt));
+  }
+
+  async getAllProjectsWithCreators(): Promise<Array<Project & { creator: User; participations: Participation[] }>> {
+    const result = await db.query.projects.findMany({
+      where: eq(projects.isActive, true),
+      with: {
+        creator: true,
+        participations: true,
+      },
+      orderBy: desc(projects.createdAt),
+    });
+    
+    return result as Array<Project & { creator: User; participations: Participation[] }>;
+  }
+
+  async getAllProjectsForDiscover(): Promise<Array<Project & { creator: PublicUser; participations: Participation[] }>> {
+    // Use raw select query to ensure we only get safe public fields
+    const projectsData = await db
+      .select({
+        // Project fields
+        id: projects.id,
+        title: projects.title,
+        description: projects.description,
+        creatorId: projects.creatorId,
+        isActive: projects.isActive,
+        createdAt: projects.createdAt,
+        updatedAt: projects.updatedAt,
+        // Safe creator fields only (NO email)
+        creatorPublic: {
+          id: users.id,
+          firstName: users.firstName,
+          profileImageUrl: users.profileImageUrl,
+        },
+      })
+      .from(projects)
+      .innerJoin(users, eq(projects.creatorId, users.id))
+      .where(eq(projects.isActive, true))
+      .orderBy(desc(projects.createdAt));
+
+    // Get participations separately
+    const projectIds = projectsData.map(p => p.id);
+    const participationsData = projectIds.length > 0 
+      ? await db.select().from(participations).where(
+          inArray(participations.projectId, projectIds)
+        )
+      : [];
+
+    // Combine the data into the expected format
+    const result = projectsData.map(projectData => ({
+      id: projectData.id,
+      title: projectData.title,
+      description: projectData.description,
+      creatorId: projectData.creatorId,
+      isActive: projectData.isActive,
+      createdAt: projectData.createdAt,
+      updatedAt: projectData.updatedAt,
+      creator: projectData.creatorPublic,
+      participations: participationsData.filter(p => p.projectId === projectData.id),
+    }));
+
+    return result as Array<Project & { creator: PublicUser; participations: Participation[] }>;
   }
 
   async updateProject(id: string, updates: Partial<InsertProject>): Promise<Project> {

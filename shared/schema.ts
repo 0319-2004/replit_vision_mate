@@ -193,6 +193,9 @@ export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
+// Safe public user type for discover/public endpoints - excludes sensitive data
+export type PublicUser = Pick<User, 'id' | 'firstName' | 'profileImageUrl'>;
+
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 
