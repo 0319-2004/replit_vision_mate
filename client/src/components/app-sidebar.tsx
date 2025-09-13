@@ -1,4 +1,4 @@
-import { Calendar, Database, Download, FileText, Globe, Home, Settings, Zap } from "lucide-react"
+import { Home, Users, Plus, Folder, User, Settings, Rocket } from "lucide-react"
 import { Link } from "wouter"
 
 import {
@@ -10,81 +10,63 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarHeader,
 } from "@/components/ui/sidebar"
 
-const items = [
+const mainItems = [
   {
-    title: "Dashboard",
+    title: "Home",
     url: "/",
     icon: Home,
   },
   {
-    title: "Create Job",
-    url: "/create",
-    icon: Zap,
+    title: "Discover",
+    url: "/discover", 
+    icon: Users,
   },
   {
-    title: "Jobs",
-    url: "/jobs",
-    icon: Calendar,
+    title: "Create Project",
+    url: "/projects/new",
+    icon: Plus,
   },
   {
-    title: "Data Export",
-    url: "/export",
-    icon: Download,
-  },
-  {
-    title: "API Docs",
-    url: "/api-docs",
-    icon: FileText,
-  },
-  {
-    title: "Data Sources",
-    url: "/sources",
-    icon: Database,
+    title: "My Projects",
+    url: "/projects/mine",
+    icon: Folder,
   },
 ]
 
-const socialSources = [
+const accountItems = [
   {
-    title: "Websites",
-    url: "/sources/web",
-    icon: Globe,
+    title: "Profile",
+    url: "/profile",
+    icon: User,
   },
   {
-    title: "Social Media",
-    url: "/sources/social",
-    icon: Zap,
+    title: "Settings",
+    url: "/settings",
+    icon: Settings,
   },
 ]
 
 export function AppSidebar() {
   return (
     <Sidebar>
+      <SidebarHeader className="p-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
+            <Rocket className="w-4 h-4 text-primary-foreground" />
+          </div>
+          <h2 className="text-lg font-semibold">VisionMates</h2>
+        </div>
+      </SidebarHeader>
+      
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>DataFlow Pro</SidebarGroupLabel>
+          <SidebarGroupLabel>Navigate</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(' ', '-')}`}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        
-        <SidebarGroup>
-          <SidebarGroupLabel>Sources</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {socialSources.map((item) => (
+              {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(' ', '-')}`}>
@@ -99,16 +81,19 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup className="mt-auto">
+          <SidebarGroupLabel>Account</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/settings" data-testid="link-settings">
-                    <Settings />
-                    <span>Settings</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {accountItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <Link href={item.url} data-testid={`link-${item.title.toLowerCase()}`}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

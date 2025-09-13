@@ -1,0 +1,180 @@
+import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, Eye, Hand, Rocket, Users, MessageCircle } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Link } from "wouter";
+import { formatDistanceToNow } from "date-fns";
+import type { Project, User } from "@shared/schema";
+
+export default function HomePage() {
+  const { user } = useAuth();
+  const { data: projects = [], isLoading } = useQuery<Project[]>({
+    queryKey: ["/api/projects"],
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading projects...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Welcome Header */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">
+            Welcome back, {(user as User)?.firstName || 'Visionary'}! 👋
+          </h1>
+          <p className="text-muted-foreground">
+            Discover new projects or share your own vision with the community.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Link href="/discover">
+            <Button variant="outline" data-testid="button-discover">
+              <Users className="w-4 h-4 mr-2" />
+              Discover
+            </Button>
+          </Link>
+          <Link href="/projects/new">
+            <Button data-testid="button-create-project">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Project
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <Rocket className="w-5 h-5 text-primary mr-2" />
+              <div>
+                <p className="text-2xl font-bold">{projects.length}</p>
+                <p className="text-xs text-muted-foreground">Active Projects</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <Eye className="w-5 h-5 text-blue-500 mr-2" />
+              <div>
+                <p className="text-2xl font-bold">👀</p>
+                <p className="text-xs text-muted-foreground">Watching</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <Hand className="w-5 h-5 text-yellow-500 mr-2" />
+              <div>
+                <p className="text-2xl font-bold">✋</p>
+                <p className="text-xs text-muted-foreground">Raised Hands</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <Rocket className="w-5 h-5 text-green-500 mr-2" />
+              <div>
+                <p className="text-2xl font-bold">🚀</p>
+                <p className="text-xs text-muted-foreground">Committed</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Projects */}
+      <section>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold">Recent Projects</h2>
+          <Link href="/projects">
+            <Button variant="ghost" data-testid="button-view-all-projects">
+              View All
+            </Button>
+          </Link>
+        </div>
+
+        {projects.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Rocket className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
+              <p className="text-muted-foreground mb-4">
+                Be the first to share your vision and inspire others to take action!
+              </p>
+              <Link href="/projects/new">
+                <Button data-testid="button-first-project">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Your First Project
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-6">
+            {projects.slice(0, 6).map((project: Project) => (
+              <Card key={project.id} className="hover-elevate">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg mb-2">
+                        <Link href={`/projects/${project.id}`} className="hover:text-primary">
+                          {project.title}
+                        </Link>
+                      </CardTitle>
+                      <p className="text-muted-foreground text-sm line-clamp-2">
+                        {project.description}
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" />
+                        0
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Hand className="w-4 h-4" />
+                        0
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Rocket className="w-4 h-4" />
+                        0
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MessageCircle className="w-4 h-4" />
+                        0
+                      </span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {project.createdAt && formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}

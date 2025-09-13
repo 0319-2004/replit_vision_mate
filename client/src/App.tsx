@@ -7,55 +7,119 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Pages
-import DashboardPage from "@/pages/dashboard";
-import CreateJobPage from "@/pages/create-job";
-import JobsPage from "@/pages/jobs";
-import ExportPage from "@/pages/export";
-import ApiDocsPage from "@/pages/api-docs";
+import LandingPage from "@/pages/landing";
+import HomePage from "@/pages/home";
 import NotFound from "@/pages/not-found";
 
-function Router() {
+function AuthenticatedRouter() {
   return (
     <Switch>
-      <Route path="/" component={DashboardPage} />
-      <Route path="/create" component={CreateJobPage} />
-      <Route path="/jobs" component={JobsPage} />
-      <Route path="/export" component={ExportPage} />
-      <Route path="/api-docs" component={ApiDocsPage} />
+      <Route path="/" component={HomePage} />
+      {/* Additional authenticated routes will go here */}
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-function App() {
+function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Switch>
+      {!isAuthenticated ? (
+        <Route path="*" component={LandingPage} />
+      ) : (
+        <>
+          <Route path="*" component={AuthenticatedRouter} />
+        </>
+      )}
+    </Switch>
+  );
+}
+
+function AuthenticatedApp() {
+  const { user } = useAuth();
   const style = {
     "--sidebar-width": "20rem",
     "--sidebar-width-icon": "4rem",
   };
 
   return (
+    <SidebarProvider style={style as React.CSSProperties}>
+      <div className="flex h-screen w-full">
+        <AppSidebar />
+        <div className="flex flex-col flex-1">
+          <header className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <div className="font-semibold text-lg">VisionMates</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={(user as any)?.profileImageUrl} />
+                <AvatarFallback>
+                  {(user as any)?.firstName?.[0] || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => window.location.href = '/api/logout'}
+                data-testid="button-logout"
+              >
+                Logout
+              </Button>
+            </div>
+          </header>
+          <main className="flex-1 overflow-auto">
+            <AuthenticatedRouter />
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}
+
+function AppContent() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return isAuthenticated ? <AuthenticatedApp /> : <LandingPage />;
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <ThemeProvider defaultTheme="dark">
-          <SidebarProvider style={style as React.CSSProperties}>
-            <div className="flex h-screen w-full">
-              <AppSidebar />
-              <div className="flex flex-col flex-1">
-                <header className="flex items-center justify-between p-4 border-b">
-                  <div className="flex items-center gap-2">
-                    <SidebarTrigger data-testid="button-sidebar-toggle" />
-                    <div className="font-semibold text-lg">DataFlow Pro</div>
-                  </div>
-                  <ThemeToggle />
-                </header>
-                <main className="flex-1 overflow-auto p-6">
-                  <Router />
-                </main>
-              </div>
-            </div>
-          </SidebarProvider>
+        <ThemeProvider defaultTheme="light">
+          <AppContent />
           <Toaster />
         </ThemeProvider>
       </TooltipProvider>
