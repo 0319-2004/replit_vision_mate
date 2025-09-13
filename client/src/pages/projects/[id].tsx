@@ -54,7 +54,7 @@ function ProgressUpdateCard({
   user: any,
   toggleReactionMutation: any
 }) {
-  const { data: updateReactions = [] } = useQuery({
+  const { data: updateReactionsData } = useQuery({
     queryKey: ["/api/reactions", update.id, "progress_update"],
     queryFn: async () => {
       const res = await fetch(`/api/reactions?targetId=${update.id}&targetType=progress_update`);
@@ -62,6 +62,8 @@ function ProgressUpdateCard({
       return await res.json();
     },
   });
+  
+  const updateReactions = updateReactionsData?.reactions || [];
 
   const userHasReacted = updateReactions.some((r: any) => r.userId === (user as UserType)?.id);
 
@@ -113,7 +115,7 @@ export default function ProjectDetailPage() {
   });
 
   // Query for reactions
-  const { data: projectReactions = [] } = useQuery({
+  const { data: projectReactionsData } = useQuery({
     queryKey: ["/api/reactions", projectId, "project"],
     queryFn: async () => {
       const res = await fetch(`/api/reactions?targetId=${projectId}&targetType=project`);
@@ -122,6 +124,8 @@ export default function ProjectDetailPage() {
     },
     enabled: !!projectId,
   });
+  
+  const projectReactions = projectReactionsData?.reactions || [];
 
   const participateMutation = useMutation({
     mutationFn: async ({ type }: { type: string }) => {
@@ -393,10 +397,10 @@ export default function ProjectDetailPage() {
               <Avatar className="h-6 w-6">
                 <AvatarImage src={project.creator.profileImageUrl || undefined} />
                 <AvatarFallback>
-                  {project.creator.firstName?.[0] || project.creator.email?.[0] || 'U'}
+                  {project.creator.firstName?.[0] || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <span>by {project.creator.firstName || project.creator.email}</span>
+              <span>by {project.creator.firstName || 'Anonymous Creator'}</span>
             </div>
             <div className="flex items-center gap-1">
               <Calendar className="w-4 h-4" />
