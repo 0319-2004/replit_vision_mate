@@ -28,7 +28,19 @@ export default function LandingPage() {
             <h1 className="text-xl font-bold">VisionMates</h1>
           </div>
           <Button 
-            onClick={() => window.location.href = '/api/login'}
+            onClick={() => {
+              import('@/hooks/useSupabaseAuth').then(({ useSupabaseAuth }) => {
+                // Googleサインインを実行
+                import('@/lib/supabase').then(({ supabase }) => {
+                  supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                      redirectTo: window.location.origin,
+                    }
+                  });
+                });
+              });
+            }}
             data-testid="button-login"
           >
             始める
@@ -62,7 +74,16 @@ export default function LandingPage() {
           </p>
           <Button 
             size="lg" 
-            onClick={() => window.location.href = '/api/login'}
+            onClick={() => {
+              import('@/lib/supabase').then(({ supabase }) => {
+                supabase.auth.signInWithOAuth({
+                  provider: 'google',
+                  options: {
+                    redirectTo: window.location.origin,
+                  }
+                });
+              });
+            }}
             className="mr-4"
             data-testid="button-hero-signup"
           >
@@ -187,7 +208,16 @@ export default function LandingPage() {
           </p>
           <Button 
             size="lg" 
-            onClick={() => window.location.href = '/api/login'}
+            onClick={() => {
+              import('@/lib/supabase').then(({ supabase }) => {
+                supabase.auth.signInWithOAuth({
+                  provider: 'google',
+                  options: {
+                    redirectTo: window.location.origin,
+                  }
+                });
+              });
+            }}
             data-testid="button-cta-signup"
           >
             今すぐ始める

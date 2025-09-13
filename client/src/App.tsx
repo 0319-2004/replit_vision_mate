@@ -96,7 +96,11 @@ function AuthenticatedApp() {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => window.location.href = '/api/logout'}
+                onClick={() => {
+                  import('@/lib/supabase').then(({ supabase }) => {
+                    supabase.auth.signOut();
+                  });
+                }}
                 data-testid="button-logout"
               >
                 ログアウト
