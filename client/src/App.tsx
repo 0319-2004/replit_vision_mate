@@ -16,6 +16,7 @@ import LandingPage from "@/pages/landing";
 import HomePage from "@/pages/home";
 import DiscoverPage from "@/pages/discover";
 import CreateProjectPage from "@/pages/projects/new";
+import MyProjectsPage from "@/pages/projects/mine";
 import ProjectDetailPage from "@/pages/projects/[id]";
 import NotFound from "@/pages/not-found";
 
@@ -25,6 +26,7 @@ function AuthenticatedRouter() {
       <Route path="/" component={HomePage} />
       <Route path="/discover" component={DiscoverPage} />
       <Route path="/projects/new" component={CreateProjectPage} />
+      <Route path="/projects/mine" component={MyProjectsPage} />
       <Route path="/projects/:id" component={ProjectDetailPage} />
       {/* Additional authenticated routes will go here */}
       <Route component={NotFound} />
