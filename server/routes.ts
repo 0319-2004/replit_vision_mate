@@ -58,8 +58,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const project = await storage.createProject(projectData);
       res.status(201).json(project);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating project:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: "Invalid project data", errors: error.errors });
+      }
       res.status(500).json({ message: "Failed to create project" });
     }
   });
@@ -77,11 +80,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Not authorized to edit this project" });
       }
 
-      const updates = insertProjectSchema.partial().parse(req.body);
+      const updates = insertProjectSchema.pick({ title: true, description: true, isActive: true }).partial().parse(req.body);
       const updatedProject = await storage.updateProject(req.params.id, updates);
       res.json(updatedProject);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating project:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: "Invalid project data", errors: error.errors });
+      }
       res.status(500).json({ message: "Failed to update project" });
     }
   });
@@ -117,6 +123,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid participation type" });
       }
 
+      // Check if participation already exists
+      const existing = await storage.getUserParticipation(req.params.id, userId, type);
+      if (existing) {
+        return res.status(409).json({ message: "Participation already exists" });
+      }
+
       const participation = await storage.addParticipation({
         projectId: req.params.id,
         userId,
@@ -133,6 +145,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { type } = req.body;
+      
+      if (!['watch', 'raise_hand', 'commit'].includes(type)) {
+        return res.status(400).json({ message: "Invalid participation type" });
+      }
       
       await storage.removeParticipation(req.params.id, userId, type);
       res.status(204).send();
@@ -154,8 +170,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const progressUpdate = await storage.createProgressUpdate(updateData);
       res.status(201).json(progressUpdate);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating progress update:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: "Invalid progress update data", errors: error.errors });
+      }
       res.status(500).json({ message: "Failed to create progress update" });
     }
   });
@@ -172,8 +191,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const comment = await storage.createComment(commentData);
       res.status(201).json(comment);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating comment:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: "Invalid comment data", errors: error.errors });
+      }
       res.status(500).json({ message: "Failed to create comment" });
     }
   });
@@ -186,7 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if reaction already exists
       const existing = await storage.getReactions(targetId, targetType);
-      const hasUserReacted = existing.some(r => r.userId === userId);
+      const hasUserReacted = existing.some(r => r.userId === userId && r.type === 'clap');
       
       if (hasUserReacted) {
         await storage.removeReaction(targetId, targetType, userId);

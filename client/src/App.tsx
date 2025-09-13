@@ -14,12 +14,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // Pages
 import LandingPage from "@/pages/landing";
 import HomePage from "@/pages/home";
+import CreateProjectPage from "@/pages/projects/new";
+import ProjectDetailPage from "@/pages/projects/[id]";
 import NotFound from "@/pages/not-found";
 
 function AuthenticatedRouter() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
+      <Route path="/projects/new" component={CreateProjectPage} />
+      <Route path="/projects/:id" component={ProjectDetailPage} />
       {/* Additional authenticated routes will go here */}
       <Route component={NotFound} />
     </Switch>

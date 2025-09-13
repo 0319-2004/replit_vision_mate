@@ -8,6 +8,7 @@ import {
   text,
   integer,
   boolean,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -53,7 +54,10 @@ export const participations = pgTable("participations", {
   userId: varchar("user_id").notNull(),
   type: varchar("type", { length: 50 }).notNull(), // 'watch', 'raise_hand', 'commit'
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  // Ensure users can only have one participation of each type per project
+  uniqueIndex("participations_unique_idx").on(table.projectId, table.userId, table.type),
+]);
 
 // Progress updates - timeline feature
 export const progressUpdates = pgTable("progress_updates", {
@@ -82,7 +86,10 @@ export const reactions = pgTable("reactions", {
   userId: varchar("user_id").notNull(),
   type: varchar("type", { length: 50 }).default("clap").notNull(), // 'clap' for 👏
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  // Ensure users can only have one reaction of each type per target
+  uniqueIndex("reactions_unique_idx").on(table.targetId, table.targetType, table.userId, table.type),
+]);
 
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
