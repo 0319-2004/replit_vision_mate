@@ -103,7 +103,7 @@ export default function DiscoverPage() {
           <CardContent className="py-12 text-center">
             <h3 className="text-lg font-semibold mb-2">発見するプロジェクトがありません</h3>
             <p className="text-muted-foreground mb-4">
-              あなたのビジョンをコミュニティと初めて共有しませんか！
+あなたのビジョンをコミュニティと共有してみませんか！
             </p>
             <Link href="/projects/new">
               <Button>最初のプロジェクトを作成</Button>

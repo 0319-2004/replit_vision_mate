@@ -201,13 +201,13 @@ export default function CreateProjectPage() {
               <div>
                 <h4 className="font-medium mb-1">情熱を示す</h4>
                 <p className="text-muted-foreground">
-                  人々は本物の情熱と原因への真の関心に引かれます。
+                  あなたの情熱や課題への思いが伝わることで、人々の共感を得られます。
                 </p>
               </div>
               <div>
                 <h4 className="font-medium mb-1">依頼内容を明確にする</h4>
                 <p className="text-muted-foreground">
-                  必要なサポート、スキル、リソースの種類を具体的に明記してください。
+                  どんなサポートやスキルが必要か、具体的に明記してください。
                 </p>
               </div>
             </CardContent>
@@ -223,15 +223,15 @@ export default function CreateProjectPage() {
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">1</div>
-                <p className="text-muted-foreground">あなたのプロジェクトがライブになり、発見ページに表示されます</p>
+                <p className="text-muted-foreground">プロジェクトが公開され、発見ページに表示されます</p>
               </div>
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">2</div>
-                <p className="text-muted-foreground">人々が👀ウォッチ、✋手を上げる、🚀コミットで関心を示します</p>
+                <p className="text-muted-foreground">人々が👀ウォッチ、✋手を上げる、🚀コミットで参加意思を表示します</p>
               </div>
               <div className="flex items-start gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">3</div>
-                <p className="text-muted-foreground">コラボレーターと繋がり、進捗更新を共有します</p>
+                <p className="text-muted-foreground">メンバーとコラボレーションし、進捗を共有していきます</p>
               </div>
             </CardContent>
           </Card>

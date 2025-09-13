@@ -58,7 +58,7 @@ export default function LandingPage() {
             あなたのアイデアを<span className="text-primary">アクション</span>に
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-VisionMatesは、誰でも小さな個人的なビジョンから始めて、チームを結成し、進捗を共有し、コラボレーターを見つけることでアイデアをアクションに変える場所です。
+小さなアイデアから大きな変化へ。VisionMatesは、あなたのビジョンを形にするためのチームを見つけ、進捗を共有し、一緒に行動を起こせるプラットフォームです。
           </p>
           <Button 
             size="lg" 
@@ -83,7 +83,7 @@ VisionMatesは、誰でも小さな個人的なビジョンから始めて、チ
       <section id="features" className="py-20 px-4 bg-muted/50">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">
-            あなたのビジョンを実現するために必要なすべて
+                ビジョンを現実にする、すべてのツール
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card>
@@ -95,7 +95,7 @@ VisionMatesは、誰でも小さな個人的なビジョンから始めて、チ
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  あなたのアイデア、チャレンジ、社会問題に基づいたプロジェクトを投稿しましょう。大小問わず。
+                  あなたのアイデアや解決したい課題をプロジェクトとして投稿できます。規模の大小は問いません。
                 </p>
               </CardContent>
             </Card>
@@ -112,7 +112,7 @@ VisionMatesは、誰でも小さな個人的なビジョンから始めて、チ
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  ウォッチ、手を上げる、コミットであなたをインスパイアしたプロジェクトへの関心を表示しましょう。
+                  ウォッチ、手を上げる、コミットで気になるプロジェクトへの参加意思を表明できます。
                 </p>
               </CardContent>
             </Card>
@@ -126,7 +126,7 @@ VisionMatesは、誰でも小さな個人的なビジョンから始めて、チ
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  チャットスレッドで更新を見失う代わりに、マイルストーンの視覚的タイムラインを維持しましょう。
+                  チャットで埋もれがちな進捗も、わかりやすいタイムライン表示で確認できます。
                 </p>
               </CardContent>
             </Card>
@@ -140,7 +140,7 @@ VisionMatesは、誰でも小さな個人的なビジョンから始めて、チ
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  カードデッキのようにプロジェクトをスワイプして、インスパイアされるものを素早く見つけましょう。
+                  カード形式でプロジェクトをスワイプして、興味のあるものを素早く発見できます。
                 </p>
               </CardContent>
             </Card>
@@ -154,7 +154,7 @@ VisionMatesは、誰でも小さな個人的なビジョンから始めて、チ
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  LINE、Instagram、LinkedInなどのシェアリンクで友達を招待しましょう。
+                  LINE、Instagram、LinkedInなどで簡単に友達を招待できます。
                 </p>
               </CardContent>
             </Card>
@@ -168,7 +168,7 @@ VisionMatesは、誰でも小さな個人的なビジョンから始めて、チ
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  コメントし、リアクションでお互いを応援し、一緒にモチベーションを維持しましょう。
+                  コメントやリアクションでお互いを応援し、一緒にモチベーションを高めていけます。
                 </p>
               </CardContent>
             </Card>
@@ -180,10 +180,10 @@ VisionMatesは、誰でも小さな個人的なビジョンから始めて、チ
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-6">
-            あなたのビジョンを現実にする準備はできましたか？
+            あなたのビジョンを現実にしませんか？
           </h2>
           <p className="text-xl text-muted-foreground mb-8">
-            VisionMatesに参加して、今日からあなたのアイデアに勢いをつけ始めましょう。
+            VisionMatesで、今日からあなたのアイデアを行動に変えていきましょう。
           </p>
           <Button 
             size="lg" 

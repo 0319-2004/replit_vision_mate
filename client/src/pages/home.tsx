@@ -117,7 +117,7 @@ export default function HomePage() {
               <Rocket className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">まだプロジェクトがありません</h3>
               <p className="text-muted-foreground mb-4">
-                あなたのビジョンをシェアし、他の人たちに行動を起こすようにインスパイアしてみませんか！
+あなたのビジョンをシェアして、みんなで行動を起こしてみませんか！
               </p>
               <Link href="/projects/new">
                 <Button data-testid="button-first-project">

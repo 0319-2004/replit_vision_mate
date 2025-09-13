@@ -62,7 +62,7 @@ export default function MyProjectsPage() {
             <div className="max-w-md mx-auto">
               <h3 className="text-lg font-medium mb-2">まだプロジェクトがありません</h3>
               <p className="text-muted-foreground mb-6">
-                あなたのビジョンを現実に変える準備はできましたか？最初のプロジェクトを作成し、コミュニティの構築を始めましょう。
+あなたのビジョンを現実にしませんか？最初のプロジェクトを作成して、コミュニティを築いていきましょう。
               </p>
               <Link href="/projects/new">
                 <Button data-testid="button-create-first-project">
