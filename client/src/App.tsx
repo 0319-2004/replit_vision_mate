@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Router } from "wouter";
 import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -46,7 +46,7 @@ function AuthenticatedRouter() {
   );
 }
 
-function Router() {
+function AppRouter() {
   const { isAuthenticated, isLoading } = useAuth();
 
   // 10秒以上ローディングの場合、強制的に非認証状態として扱う
@@ -77,9 +77,7 @@ function Router() {
       {!isAuthenticated ? (
         <Route path="*" component={LandingPage} />
       ) : (
-        <>
-          <Route path="*" component={AuthenticatedRouter} />
-        </>
+        <Route path="*" component={AuthenticatedApp} />
       )}
     </Switch>
   );
@@ -133,29 +131,17 @@ function AuthenticatedApp() {
   );
 }
 
-function AppContent() {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">読み込み中...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return isAuthenticated ? <AuthenticatedApp /> : <LandingPage />;
-}
-
 function App() {
+  // GitHub Pagesのベースパスを設定
+  const basePath = import.meta.env.PROD ? '/replit_vision_mate' : '';
+  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider defaultTheme="light">
-          <AppContent />
+          <Router base={basePath}>
+            <AppRouter />
+          </Router>
           <Toaster />
         </ThemeProvider>
       </TooltipProvider>

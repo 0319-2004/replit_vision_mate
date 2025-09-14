@@ -35,7 +35,9 @@ export default function LandingPage() {
                   supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                      redirectTo: `${window.location.origin}/replit_vision_mate/`,
+                      redirectTo: window.location.href.includes('localhost') 
+                        ? 'http://localhost:5173/' 
+                        : 'https://0319-2004.github.io/replit_vision_mate/',
                     }
                   });
                 });
@@ -79,7 +81,9 @@ export default function LandingPage() {
                 supabase.auth.signInWithOAuth({
                   provider: 'google',
                   options: {
-                    redirectTo: window.location.origin,
+                    redirectTo: window.location.href.includes('localhost') 
+                      ? 'http://localhost:5173/' 
+                      : 'https://0319-2004.github.io/replit_vision_mate/',
                   }
                 });
               });
@@ -213,7 +217,9 @@ export default function LandingPage() {
                 supabase.auth.signInWithOAuth({
                   provider: 'google',
                   options: {
-                    redirectTo: window.location.origin,
+                    redirectTo: window.location.href.includes('localhost') 
+                      ? 'http://localhost:5173/' 
+                      : 'https://0319-2004.github.io/replit_vision_mate/',
                   }
                 });
               });
