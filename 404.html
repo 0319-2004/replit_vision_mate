@@ -10,7 +10,7 @@
           var l = window.location;
           var base = '/replit_vision_mate';
           
-          console.log('404.html triggered:', l.href);
+          console.log('Root 404.html triggered:', l.href);
           
           // OAuth callback detection - force redirect to base with hash
           if (l.hash && (l.hash.includes('access_token') || l.hash.includes('error'))) {
@@ -43,7 +43,7 @@
           // Fallback - always go to base
           l.replace(l.protocol + '//' + l.hostname + base + '/');
         } catch (e) {
-          console.error('404.html error:', e);
+          console.error('Root 404.html error:', e);
           // Final fallback
           window.location.replace('/replit_vision_mate/');
         }
