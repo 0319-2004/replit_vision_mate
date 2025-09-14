@@ -141,11 +141,6 @@ export default function ProjectDetailPage() {
   // Query for reactions
   const { data: projectReactionsData } = useQuery({
     queryKey: ["/api/reactions", "project", projectId],
-    queryFn: async () => {
-      const res = await fetch(`/api/reactions/project/${projectId}`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to fetch reactions');
-      return await res.json();
-    },
     enabled: !!projectId,
   });
   

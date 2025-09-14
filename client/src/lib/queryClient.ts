@@ -54,6 +54,15 @@ export const getQueryFn: <T>(options: {
                   if (path === "/api/auth/user") {
                     return await api.users.getCurrentUser() as any;
                   }
+                  
+                  if (path.startsWith("/api/reactions/") && path.includes("/")) {
+                    const parts = path.split("/");
+                    if (parts.length === 5 && parts[3]) { // /api/reactions/{targetType}/{targetId}
+                      const targetType = parts[3];
+                      const targetId = parts[4];
+                      return await api.reactions.getStatus(targetId, targetType) as any;
+                    }
+                  }
       
       // Legacy API fallback
       const res = await fetch(path, {
