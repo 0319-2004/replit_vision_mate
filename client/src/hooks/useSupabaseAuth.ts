@@ -15,32 +15,40 @@ export function useSupabaseAuth() {
     const getInitialSession = async () => {
       console.log('🔄 Getting initial session...')
       
-      // タイムアウト設定（5秒）
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Session timeout')), 5000)
-      })
-      
       try {
-        const sessionPromise = supabase.auth.getSession()
-        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise])
+        // タイムアウト付きでセッション取得（10秒に延長）
+        const timeoutMs = 10000
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => {
+          controller.abort()
+          console.log('⚠️ Session timeout after 10 seconds, continuing without auth')
+        }, timeoutMs)
+        
+        const { data: { session }, error } = await supabase.auth.getSession()
+        clearTimeout(timeoutId)
         
         console.log('📝 Initial session result:', { session: !!session, error })
+        
         if (error) {
           console.error('❌ Error getting session:', error)
+          // エラーがあっても続行（非認証状態として処理）
+          setSession(null)
+          setUser(null)
         } else {
           setSession(session)
           setUser(session?.user ?? null)
           console.log('✅ Session set successfully:', { user: !!session?.user })
         }
-        setIsLoading(false)
-        console.log('🏁 Initial session loading complete')
+        
       } catch (err) {
         console.error('💥 Unexpected error in getInitialSession:', err)
-        // IndexedDBエラーの場合、強制的にローディング完了
+        // どんなエラーでも非認証状態として処理
         setSession(null)
         setUser(null)
+      } finally {
+        // 必ずローディング状態を終了
         setIsLoading(false)
-        console.log('🚨 Forced loading complete due to error')
+        console.log('🏁 Initial session loading complete')
       }
     }
 
