@@ -144,8 +144,8 @@ export default function ProjectDetailPage() {
     enabled: !!projectId,
   });
   
-  const projectReactionCount = projectReactionsData?.count || 0;
-  const projectUserReacted = projectReactionsData?.userReacted || false;
+  const projectReactionCount = (projectReactionsData as any)?.count || 0;
+  const projectUserReacted = (projectReactionsData as any)?.userReacted || false;
 
   const participateMutation = useMutation({
     mutationFn: async ({ type }: { type: string }) => {
@@ -332,28 +332,15 @@ export default function ProjectDetailPage() {
 
   const handleParticipate = (type: string) => {
     const currentParticipation = project?.participations?.find(
-      p => p.userId === (user as UserType)?.id
+      p => p.userId === user?.id
     );
 
     if (currentParticipation?.type === type) {
       // 同じタイプをクリック → 削除（トグル）
       removeParticipationMutation.mutate({ type });
     } else {
-      // 異なるタイプまたは初回参加
-      if (currentParticipation) {
-        // 既存の参加があれば削除してから新しいタイプを追加
-        removeParticipationMutation.mutate(
-          { type: currentParticipation.type },
-          {
-            onSuccess: () => {
-              participateMutation.mutate({ type });
-            }
-          }
-        );
-      } else {
-        // 初回参加の場合は直接追加
-        participateMutation.mutate({ type });
-      }
+      // 異なるタイプまたは初回参加 → setExclusiveで安全に処理
+      participateMutation.mutate({ type });
     }
   };
 
@@ -436,13 +423,13 @@ export default function ProjectDetailPage() {
     );
   }
 
-  const isCreator = (user as UserType)?.id === project.creatorId;
+  const isCreator = user?.id === project.creatorId;
   const watchCount = project.participations?.filter(p => p.type === 'watch').length || 0;
   const raiseHandCount = project.participations?.filter(p => p.type === 'raise_hand').length || 0;
   const commitCount = project.participations?.filter(p => p.type === 'commit').length || 0;
 
   // ユーザーの現在の参加状況（排他的に一つのみ）
-  const userParticipation = project.participations?.find(p => p.userId === (user as UserType)?.id);
+  const userParticipation = project.participations?.find(p => p.userId === user?.id);
   const userWatching = userParticipation?.type === 'watch';
   const userRaisedHand = userParticipation?.type === 'raise_hand';
   const userCommitted = userParticipation?.type === 'commit';
@@ -456,7 +443,7 @@ export default function ProjectDetailPage() {
         <p>Project ID: {projectId}</p>
         <p>Project loaded: {project ? 'Yes' : 'No'}</p>
         <p>User authenticated: {user ? 'Yes' : 'No'}</p>
-        <p>Error: {error ? error.message : 'None'}</p>
+        <p>Error: {error ? (error as any).message : 'None'}</p>
         <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
       </div>
       {/* Header */}

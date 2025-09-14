@@ -102,10 +102,16 @@ export async function apiRequest(
     const projectId = url.split('/')[3];
     try {
       if (method === 'POST') {
-        const result = await api.participations.add(projectId, (data as any).type);
+        // 排他的な参加設定を使用
+        const result = await api.participations.setExclusive(projectId, (data as any).type);
         return new Response(JSON.stringify(result), { status: 201 });
       } else if (method === 'DELETE') {
-        await api.participations.remove(projectId, (data as any).type);
+        // 特定のタイプを削除（トグル）またはすべて削除
+        if ((data as any).type) {
+          await api.participations.remove(projectId, (data as any).type);
+        } else {
+          await api.participations.removeAll(projectId);
+        }
         return new Response('', { status: 204 });
       }
     } catch (error: any) {

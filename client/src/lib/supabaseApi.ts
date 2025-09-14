@@ -330,6 +330,52 @@ export const participationsApi = {
     if (error) throw error
   },
 
+  // 排他的な参加設定（既存の参加を削除してから新しい参加を追加）
+  async setExclusive(projectId: string, type: 'watch' | 'raise_hand' | 'commit') {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    // トランザクション的に処理：まず既存の参加をすべて削除
+    const { error: deleteError } = await supabase
+      .from('participations')
+      .delete()
+      .eq('project_id', projectId)
+      .eq('user_id', user.id)
+
+    if (deleteError) {
+      console.warn('Failed to delete existing participations:', deleteError)
+      // 削除エラーは無視して続行（存在しない可能性）
+    }
+
+    // 新しい参加を追加
+    const { data, error: insertError } = await supabase
+      .from('participations')
+      .insert({
+        project_id: projectId,
+        user_id: user.id,
+        type,
+      })
+      .select()
+      .single()
+
+    if (insertError) throw insertError
+    return data
+  },
+
+  // ユーザーの全参加を削除
+  async removeAll(projectId: string) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const { error } = await supabase
+      .from('participations')
+      .delete()
+      .eq('project_id', projectId)
+      .eq('user_id', user.id)
+
+    if (error) throw error
+  },
+
   // ユーザーの参加状況取得
   async getUserParticipation(projectId: string, userId: string, type: string) {
     const { data, error } = await supabase
