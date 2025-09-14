@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>VisionMates - リダイレクト中...</title>
+    <meta http-equiv="refresh" content="0; url=/replit_vision_mate/">
+    <script type="text/javascript">
+      (function() {
+        try {
+          var l = window.location;
+          var base = '/replit_vision_mate';
+          
+          console.log('404.html triggered:', l.href);
+          
+          // OAuth callback detection - force redirect to base with hash
+          if (l.hash && (l.hash.includes('access_token') || l.hash.includes('error'))) {
+            console.log('OAuth callback detected, redirecting to base with hash');
+            var targetUrl = l.protocol + '//' + l.hostname + base + '/' + l.hash;
+            console.log('Redirecting to:', targetUrl);
+            l.replace(targetUrl);
+            return;
+          }
+          
+          // Any other 404 on root domain - go to base
+          if (l.pathname === '/' || l.pathname === '') {
+            console.log('Root 404, redirecting to base');
+            l.replace(l.protocol + '//' + l.hostname + base + '/');
+            return;
+          }
+          
+          // Standard SPA routing for paths under /replit_vision_mate/
+          if (l.pathname.indexOf(base) === 0) {
+            var redirect = l.search.slice(1);
+            if (redirect) {
+              var decoded = redirect.split('&').map(function(s) { 
+                return s.replace(/~and~/g, '&')
+              }).join('?');
+              window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+              return;
+            }
+          }
+          
+          // Fallback - always go to base
+          l.replace(l.protocol + '//' + l.hostname + base + '/');
+        } catch (e) {
+          console.error('404.html error:', e);
+          // Final fallback
+          window.location.replace('/replit_vision_mate/');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div style="text-align: center; margin-top: 50px;">
+      <h3>VisionMates にリダイレクト中...</h3>
+      <p>自動的にリダイレクトされない場合は、<a href="/replit_vision_mate/">こちら</a>をクリックしてください。</p>
+    </div>
+  </body>
+</html>
