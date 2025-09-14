@@ -35,7 +35,7 @@ export default function LandingPage() {
                   supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                      redirectTo: window.location.origin,
+                      redirectTo: `${window.location.origin}/replit_vision_mate/`,
                     }
                   });
                 });
