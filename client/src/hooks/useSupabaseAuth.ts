@@ -8,7 +8,13 @@ export function useSupabaseAuth() {
   const [isLoading, setIsLoading] = useState(true)
 
   // デバッグ用ログ
-  console.log('🔐 useSupabaseAuth state:', { user: !!user, session: !!session, isLoading })
+  console.log('🔐 useSupabaseAuth state:', { 
+    user: !!user, 
+    session: !!session, 
+    isLoading,
+    userEmail: user?.email,
+    sessionValid: !!session?.access_token 
+  })
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout

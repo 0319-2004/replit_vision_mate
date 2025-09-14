@@ -11,6 +11,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Pages
 import LandingPage from "@/pages/landing";
@@ -47,26 +48,35 @@ function AuthenticatedRouter() {
 }
 
 function AppRouter() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user, session } = useAuth();
+
+  // デバッグ用ログ
+  console.log('🏠 AppRouter state:', { isAuthenticated, isLoading, hasUser: !!user, hasSession: !!session });
 
   // 10秒以上ローディングの場合、強制的にリロード（最後の手段）
   useEffect(() => {
     if (isLoading) {
+      console.log('⏳ Starting 10s timeout for page reload...');
       const timeout = setTimeout(() => {
         console.log('🚨 Forcing page reload after 10 seconds as last resort');
         window.location.reload();
       }, 10000);
-      return () => clearTimeout(timeout);
+      return () => {
+        console.log('⏹️ Clearing 10s reload timeout');
+        clearTimeout(timeout);
+      };
     }
   }, [isLoading]);
 
   if (isLoading) {
+    console.log('🔄 Showing loading screen...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">読み込み中...</p>
           <p className="text-sm text-gray-500 mt-2">最大5秒で読み込み完了します</p>
+          <p className="text-xs text-gray-400 mt-1">User: {!!user ? 'Yes' : 'No'} | Session: {!!session ? 'Yes' : 'No'}</p>
         </div>
       </div>
     );
@@ -136,16 +146,18 @@ function App() {
   const basePath = import.meta.env.PROD ? '/replit_vision_mate' : '';
   
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <ThemeProvider defaultTheme="light">
-          <Router base={basePath}>
-            <AppRouter />
-          </Router>
-          <Toaster />
-        </ThemeProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <ThemeProvider defaultTheme="light">
+            <Router base={basePath}>
+              <AppRouter />
+            </Router>
+            <Toaster />
+          </ThemeProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
