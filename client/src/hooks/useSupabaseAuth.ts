@@ -11,12 +11,37 @@ export function useSupabaseAuth() {
   console.log('🔐 useSupabaseAuth state:', { user: !!user, session: !!session, isLoading })
 
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+    let isCompleted = false
+
+    // 強制的にローディングを終了（5秒後）
+    const forceLoadingComplete = () => {
+      if (!isCompleted) {
+        console.log('⚠️ Force completing loading after timeout')
+        isCompleted = true
+        setIsLoading(false)
+        setSession(null)
+        setUser(null)
+      }
+    }
+
+    // 安全装置：5秒後に強制終了
+    timeoutId = setTimeout(forceLoadingComplete, 5000)
+
     // 初期セッション取得
     const getInitialSession = async () => {
       console.log('🔄 Getting initial session...')
       
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
+        // Promise with timeout
+        const sessionPromise = supabase.auth.getSession()
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Session timeout')), 3000)
+        })
+
+        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise])
+        
+        if (isCompleted) return // 既に完了済みの場合は何もしない
         
         if (error) {
           console.warn('⚠️ Session error (continuing as unauthenticated):', error)
@@ -29,12 +54,17 @@ export function useSupabaseAuth() {
         }
         
       } catch (err) {
+        if (isCompleted) return // 既に完了済みの場合は何もしない
         console.warn('⚠️ Session load failed (continuing as unauthenticated):', err)
         setSession(null)
         setUser(null)
       } finally {
-        setIsLoading(false)
-        console.log('🏁 Session initialization complete')
+        if (!isCompleted) {
+          isCompleted = true
+          clearTimeout(timeoutId)
+          setIsLoading(false)
+          console.log('🏁 Session initialization complete')
+        }
       }
     }
 
@@ -44,6 +74,12 @@ export function useSupabaseAuth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session)
+        
+        if (!isCompleted) {
+          isCompleted = true
+          clearTimeout(timeoutId)
+        }
+        
         setSession(session)
         setUser(session?.user ?? null)
         setIsLoading(false)
@@ -55,7 +91,10 @@ export function useSupabaseAuth() {
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      clearTimeout(timeoutId)
+      subscription.unsubscribe()
+    }
   }, [])
 
   // ユーザー情報をデータベースに同期

@@ -49,13 +49,13 @@ function AuthenticatedRouter() {
 function AppRouter() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // 20秒以上ローディングの場合、強制的にリロード（最後の手段）
+  // 10秒以上ローディングの場合、強制的にリロード（最後の手段）
   useEffect(() => {
     if (isLoading) {
       const timeout = setTimeout(() => {
-        console.log('🚨 Forcing page reload after 20 seconds as last resort');
+        console.log('🚨 Forcing page reload after 10 seconds as last resort');
         window.location.reload();
-      }, 20000);
+      }, 10000);
       return () => clearTimeout(timeout);
     }
   }, [isLoading]);
@@ -66,7 +66,7 @@ function AppRouter() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">読み込み中...</p>
-          <p className="text-sm text-gray-500 mt-2">初回読み込み時は時間がかかる場合があります</p>
+          <p className="text-sm text-gray-500 mt-2">最大5秒で読み込み完了します</p>
         </div>
       </div>
     );
