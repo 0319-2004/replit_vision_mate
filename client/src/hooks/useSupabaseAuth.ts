@@ -14,8 +14,16 @@ export function useSupabaseAuth() {
     // 初期セッション取得
     const getInitialSession = async () => {
       console.log('🔄 Getting initial session...')
+      
+      // タイムアウト設定（5秒）
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Session timeout')), 5000)
+      })
+      
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
+        const sessionPromise = supabase.auth.getSession()
+        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise])
+        
         console.log('📝 Initial session result:', { session: !!session, error })
         if (error) {
           console.error('❌ Error getting session:', error)
@@ -28,7 +36,11 @@ export function useSupabaseAuth() {
         console.log('🏁 Initial session loading complete')
       } catch (err) {
         console.error('💥 Unexpected error in getInitialSession:', err)
+        // IndexedDBエラーの場合、強制的にローディング完了
+        setSession(null)
+        setUser(null)
         setIsLoading(false)
+        console.log('🚨 Forced loading complete due to error')
       }
     }
 

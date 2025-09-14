@@ -4,7 +4,19 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = 'https://dyuzdoyzsfeszaxadxhl.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5dXpkb3l6c2Zlc3pheGFkeGhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NzYwMTYsImV4cCI6MjA3MzM1MjAxNn0.p_tDknrJ_dJAr7N6sGUgN-8CFe0tTDPR1FLgI2UEDcQ'
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: window.localStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'visionmates-web'
+    }
+  }
+})
 
 // 型定義
 export interface Database {
