@@ -30,29 +30,29 @@ export const getQueryFn: <T>(options: {
                 // Handle Supabase API calls
                 try {
                   if (path === "/api/projects") {
-                    return await api.projects.getAll() as T;
+                    return await api.projects.getAll() as any;
                   }
                   
                   if (path === "/api/projects/discover") {
-                    return await api.projects.getForDiscover() as T;
+                    return await api.projects.getForDiscover() as any;
                   }
                   
                   if (path.startsWith("/api/projects/") && path.split("/").length === 4) {
                     const projectId = path.split("/")[3];
-                    return await api.projects.getById(projectId) as T;
+                    return await api.projects.getById(projectId) as any;
                   }
                   
                   if (path === "/api/conversations") {
-                    return await api.messages.getConversations() as T;
+                    return await api.messages.getConversations() as any;
                   }
                   
                   if (path.startsWith("/api/conversations/") && path.split("/").length === 4) {
                     const conversationId = path.split("/")[3];
-                    return await api.messages.getConversationById(conversationId) as T;
+                    return await api.messages.getConversation(conversationId) as any;
                   }
                   
                   if (path === "/api/auth/user") {
-                    return await api.users.getCurrentUser() as T;
+                    return await api.users.getCurrentUser() as any;
                   }
       
       // Legacy API fallback
@@ -66,7 +66,7 @@ export const getQueryFn: <T>(options: {
 
       await throwIfResNotOk(res);
       return await res.json();
-    } catch (error) {
+    } catch (error: any) {
       if (unauthorizedBehavior === "returnNull" && error?.message?.includes('401')) {
         return null;
       }
@@ -80,14 +80,18 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   // Handle Supabase API calls through our wrapper
-  try {
-    if (url === '/api/projects' && method === 'POST') {
+  if (url === '/api/projects' && method === 'POST') {
+    try {
       const result = await api.projects.create(data as any);
       return new Response(JSON.stringify(result), { status: 201 });
+    } catch (error: any) {
+      throw new Error(`Supabase API Error: ${error.message}`);
     }
-    
-    if (url.startsWith('/api/projects/') && url.endsWith('/participate')) {
-      const projectId = url.split('/')[3];
+  }
+  
+  if (url.startsWith('/api/projects/') && url.endsWith('/participate')) {
+    const projectId = url.split('/')[3];
+    try {
       if (method === 'POST') {
         const result = await api.participations.add(projectId, (data as any).type);
         return new Response(JSON.stringify(result), { status: 201 });
@@ -95,29 +99,52 @@ export async function apiRequest(
         await api.participations.remove(projectId, (data as any).type);
         return new Response('', { status: 204 });
       }
+    } catch (error: any) {
+      throw new Error(`Supabase API Error: ${error.message}`);
     }
-    
-    if (url === '/api/messages' && method === 'POST') {
+  }
+  
+  if (url === '/api/messages' && method === 'POST') {
+    try {
       const { recipientId, content } = data as any;
       const result = await api.messages.sendMessage(recipientId, content);
       return new Response(JSON.stringify(result), { status: 201 });
+    } catch (error: any) {
+      throw new Error(`Supabase API Error: ${error.message}`);
     }
-    
-                if (url === '/api/reactions' && method === 'POST') {
-                  const { targetId, targetType } = data as any;
-                  const result = await api.reactions.toggle(targetId, targetType);
-                  return new Response(JSON.stringify(result), { status: 200 });
-                }
-                
-                if (url === '/api/profile' && method === 'PUT') {
-                  const result = await api.users.updateProfile(data as any);
-                  return new Response(JSON.stringify(result), { status: 200 });
-                }
-  } catch (error) {
-    throw new Error(`Supabase API Error: ${error.message}`);
   }
   
-  // Legacy API fallback
+  if (url.startsWith('/api/projects/') && url.endsWith('/comments') && method === 'POST') {
+    const projectId = url.split('/')[3];
+    try {
+      const { content } = data as any;
+      const result = await api.comments.create(projectId, content);
+      return new Response(JSON.stringify(result), { status: 201 });
+    } catch (error: any) {
+      throw new Error(`Supabase API Error: ${error.message}`);
+    }
+  }
+  
+  if (url === '/api/reactions' && method === 'POST') {
+    try {
+      const { targetId, targetType } = data as any;
+      const result = await api.reactions.toggle(targetId, targetType);
+      return new Response(JSON.stringify(result), { status: 200 });
+    } catch (error: any) {
+      throw new Error(`Supabase API Error: ${error.message}`);
+    }
+  }
+  
+  if (url === '/api/profile' && method === 'PUT') {
+    try {
+      const result = await api.users.updateProfile(data as any);
+      return new Response(JSON.stringify(result), { status: 200 });
+    } catch (error: any) {
+      throw new Error(`Supabase API Error: ${error.message}`);
+    }
+  }
+  
+  // Legacy API fallback for unhandled endpoints only
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
