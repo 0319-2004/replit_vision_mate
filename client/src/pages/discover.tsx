@@ -167,7 +167,13 @@ export default function DiscoverPage() {
                   </p>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Calendar className="w-3 h-3" />
-                    {formatDistanceToNow(new Date(currentProject.createdAt!), { addSuffix: true })}
+                    {(() => {
+                      try {
+                        return formatDistanceToNow(new Date(currentProject.createdAt || Date.now()), { addSuffix: true });
+                      } catch (e) {
+                        return 'just now';
+                      }
+                    })()}
                   </div>
                 </div>
               </div>

@@ -84,7 +84,13 @@ export default function MyProjectsPage() {
                   </Badge>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Calendar className="w-3 h-3" />
-                    {formatDistanceToNow(new Date(project.createdAt!), { addSuffix: true })}
+                    {(() => {
+                      try {
+                        return formatDistanceToNow(new Date(project.createdAt || Date.now()), { addSuffix: true });
+                      } catch (e) {
+                        return '';
+                      }
+                    })()}
                   </div>
                 </div>
                 <CardTitle className="line-clamp-2">

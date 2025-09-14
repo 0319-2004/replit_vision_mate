@@ -175,7 +175,13 @@ export default function HomePage() {
                       </span>
                     </div>
                     <span className="text-sm text-muted-foreground">
-                      {project.createdAt && formatDistanceToNow(new Date(project.createdAt), { addSuffix: true })}
+                      {(() => {
+                        try {
+                          return project.createdAt ? formatDistanceToNow(new Date(project.createdAt), { addSuffix: true }) : '';
+                        } catch (e) {
+                          return '';
+                        }
+                      })()}
                     </span>
                   </div>
                 </CardContent>
