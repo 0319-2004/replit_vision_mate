@@ -17,7 +17,7 @@ export function useSupabaseAuth() {
     // 強制的にローディングを終了（5秒後）
     const forceLoadingComplete = () => {
       if (!isCompleted) {
-        console.log('⚠️ Force completing loading after timeout')
+        console.log('⏰ Session loading timeout - continuing as guest user')
         isCompleted = true
         setIsLoading(false)
         setSession(null)
@@ -33,18 +33,12 @@ export function useSupabaseAuth() {
       console.log('🔄 Getting initial session...')
       
       try {
-        // Promise with timeout
-        const sessionPromise = supabase.auth.getSession()
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Session timeout')), 3000)
-        })
-
-        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise])
+        const { data: { session }, error } = await supabase.auth.getSession()
         
         if (isCompleted) return // 既に完了済みの場合は何もしない
         
         if (error) {
-          console.warn('⚠️ Session error (continuing as unauthenticated):', error)
+          console.log('ℹ️ Session error - continuing as guest user')
           setSession(null)
           setUser(null)
         } else {
@@ -55,7 +49,7 @@ export function useSupabaseAuth() {
         
       } catch (err) {
         if (isCompleted) return // 既に完了済みの場合は何もしない
-        console.warn('⚠️ Session load failed (continuing as unauthenticated):', err)
+        console.log('ℹ️ Session load failed - continuing as guest user')
         setSession(null)
         setUser(null)
       } finally {
