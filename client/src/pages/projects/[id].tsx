@@ -331,14 +331,29 @@ export default function ProjectDetailPage() {
   };
 
   const handleParticipate = (type: string) => {
-    const existingParticipation = project?.participations?.find(
-      p => p.userId === (user as UserType)?.id && p.type === type
+    const currentParticipation = project?.participations?.find(
+      p => p.userId === (user as UserType)?.id
     );
 
-    if (existingParticipation) {
+    if (currentParticipation?.type === type) {
+      // 同じタイプをクリック → 削除（トグル）
       removeParticipationMutation.mutate({ type });
     } else {
-      participateMutation.mutate({ type });
+      // 異なるタイプまたは初回参加
+      if (currentParticipation) {
+        // 既存の参加があれば削除してから新しいタイプを追加
+        removeParticipationMutation.mutate(
+          { type: currentParticipation.type },
+          {
+            onSuccess: () => {
+              participateMutation.mutate({ type });
+            }
+          }
+        );
+      } else {
+        // 初回参加の場合は直接追加
+        participateMutation.mutate({ type });
+      }
     }
   };
 
@@ -426,9 +441,12 @@ export default function ProjectDetailPage() {
   const raiseHandCount = project.participations?.filter(p => p.type === 'raise_hand').length || 0;
   const commitCount = project.participations?.filter(p => p.type === 'commit').length || 0;
 
-  const userWatching = project.participations?.some(p => p.userId === (user as UserType)?.id && p.type === 'watch');
-  const userRaisedHand = project.participations?.some(p => p.userId === (user as UserType)?.id && p.type === 'raise_hand');
-  const userCommitted = project.participations?.some(p => p.userId === (user as UserType)?.id && p.type === 'commit');
+  // ユーザーの現在の参加状況（排他的に一つのみ）
+  const userParticipation = project.participations?.find(p => p.userId === (user as UserType)?.id);
+  const userWatching = userParticipation?.type === 'watch';
+  const userRaisedHand = userParticipation?.type === 'raise_hand';
+  const userCommitted = userParticipation?.type === 'commit';
+  const hasAnyParticipation = !!userParticipation;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -736,7 +754,7 @@ export default function ProjectDetailPage() {
             <CardHeader>
               <CardTitle>Show Your Interest</CardTitle>
               <CardDescription>
-                Let the creator know you're interested in this vision
+                このプロジェクトへの関心を示してください（一つだけ選択可能）
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -745,10 +763,11 @@ export default function ProjectDetailPage() {
                 onClick={() => handleParticipate('watch')}
                 disabled={participateMutation.isPending || removeParticipationMutation.isPending}
                 data-testid="button-watch"
-                className="w-full justify-start"
+                className={`w-full justify-start ${hasAnyParticipation && !userWatching ? 'opacity-50' : ''}`}
               >
                 <Eye className="w-4 h-4 mr-2" />
                 👀 Watch ({watchCount})
+                {userWatching && <span className="ml-auto text-xs">✓ 選択中</span>}
               </Button>
               
               <Button
@@ -756,10 +775,11 @@ export default function ProjectDetailPage() {
                 onClick={() => handleParticipate('raise_hand')}
                 disabled={participateMutation.isPending || removeParticipationMutation.isPending}
                 data-testid="button-raise-hand"
-                className="w-full justify-start"
+                className={`w-full justify-start ${hasAnyParticipation && !userRaisedHand ? 'opacity-50' : ''}`}
               >
                 <Hand className="w-4 h-4 mr-2" />
                 ✋ Raise Hand ({raiseHandCount})
+                {userRaisedHand && <span className="ml-auto text-xs">✓ 選択中</span>}
               </Button>
               
               <Button
@@ -767,10 +787,11 @@ export default function ProjectDetailPage() {
                 onClick={() => handleParticipate('commit')}
                 disabled={participateMutation.isPending || removeParticipationMutation.isPending}
                 data-testid="button-commit"
-                className="w-full justify-start"
+                className={`w-full justify-start ${hasAnyParticipation && !userCommitted ? 'opacity-50' : ''}`}
               >
                 <Rocket className="w-4 h-4 mr-2" />
                 🚀 Commit ({commitCount})
+                {userCommitted && <span className="ml-auto text-xs">✓ 選択中</span>}
               </Button>
             </CardContent>
           </Card>
