@@ -107,10 +107,17 @@ export default function ProjectDetailPage() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isCommentFormVisible, setIsCommentFormVisible] = useState(false);
 
-  const { data: project, isLoading } = useQuery<ProjectWithDetails>({
+  const { data: project, isLoading, error } = useQuery<ProjectWithDetails>({
     queryKey: ["/api/projects", projectId],
     enabled: !!projectId,
+    retry: 2,
+    retryDelay: 1000,
   });
+
+  // デバッグ用ログ
+  console.log('Project detail - projectId:', projectId);
+  console.log('Project detail - project:', project);
+  console.log('Project detail - error:', error);
 
   // Query for reactions
   const { data: projectReactionsData } = useQuery({
@@ -343,8 +350,36 @@ export default function ProjectDetailPage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading project...</p>
+          <p className="text-muted-foreground">プロジェクトを読み込み中...</p>
+          <p className="text-sm text-gray-500 mt-2">Loading project...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <h3 className="text-lg font-semibold mb-2">エラーが発生しました</h3>
+            <p className="text-muted-foreground mb-4">
+              プロジェクトの読み込み中にエラーが発生しました。
+            </p>
+            <p className="text-sm text-gray-500 mb-4">
+              Error: {error?.message || 'Unknown error'}
+            </p>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={() => window.location.reload()}>
+                再読み込み / Reload
+              </Button>
+              <Button variant="outline" onClick={() => window.location.href = "/"}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                ホームに戻る / Back to Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -354,13 +389,16 @@ export default function ProjectDetailPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <Card>
           <CardContent className="py-12 text-center">
-            <h3 className="text-lg font-semibold mb-2">Project not found</h3>
+            <h3 className="text-lg font-semibold mb-2">プロジェクトが見つかりません</h3>
             <p className="text-muted-foreground mb-4">
-              This project doesn't exist or may have been removed.
+              このプロジェクトは存在しないか、削除された可能性があります。
+            </p>
+            <p className="text-sm text-gray-500 mb-4">
+              Project not found or may have been removed.
             </p>
             <Button onClick={() => window.location.href = "/"}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              ホームに戻る / Back to Home
             </Button>
           </CardContent>
         </Card>

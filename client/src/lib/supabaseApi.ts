@@ -58,56 +58,188 @@ export interface Reaction {
 export const projectsApi = {
   // 全プロジェクト取得
   async getAll(): Promise<Project[]> {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select(`
+          *,
+          creator:users!creator_id (
+            id,
+            first_name,
+            last_name,
+            display_name,
+            avatar_url,
+            profile_image_url
+          )
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
 
-    if (error) throw error
-    return data || []
+      if (error) {
+        console.error('Error fetching projects:', error)
+        throw error
+      }
+      return data || []
+    } catch (error) {
+      console.error('Error in getAll:', error)
+      return []
+    }
   },
 
   // 発見用プロジェクト取得（作成者情報込み）
   async getForDiscover(): Promise<ProjectWithCreator[]> {
-    const { data, error } = await supabase
-      .from('projects')
-      .select(`
-        *,
-        creator:users!creator_id (
-          id,
-          first_name,
-          profile_image_url
-        ),
-        participations (
-          id,
-          user_id,
-          type
-        )
-      `)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select(`
+          *,
+          creator:users!creator_id (
+            id,
+            first_name,
+            last_name,
+            display_name,
+            avatar_url,
+            profile_image_url
+          )
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(20) // パフォーマンス向上のため制限
 
-    if (error) throw error
-    return data || []
+      if (error) {
+        console.error('Error fetching projects for discover:', error)
+        throw error
+      }
+
+      // 参加情報を別途取得（オプション）
+      const projects = data || []
+      for (const project of projects) {
+        try {
+          const { data: participationData } = await supabase
+            .from('participations')
+            .select('id, user_id, type')
+            .eq('project_id', project.id)
+          
+          project.participations = participationData || []
+        } catch (error) {
+          console.warn(`Could not fetch participations for project ${project.id}:`, error)
+          project.participations = []
+        }
+      }
+
+      return projects
+    } catch (error) {
+      console.error('Error in getForDiscover:', error)
+      return []
+    }
   },
 
   // プロジェクト詳細取得
   async getById(id: string) {
-    const { data, error } = await supabase
-      .from('projects')
-      .select(`
-        *,
-        creator:users!creator_id (*),
-        participations (*),
-        progress_updates (*),
-        comments (*)
-      `)
-      .eq('id', id)
-      .single()
+    try {
+      // まず基本的なプロジェクト情報と作成者情報を取得
+      const { data: project, error: projectError } = await supabase
+        .from('projects')
+        .select(`
+          *,
+          creator:users!creator_id (
+            id,
+            first_name,
+            last_name,
+            display_name,
+            avatar_url,
+            profile_image_url
+          )
+        `)
+        .eq('id', id)
+        .single()
 
-    if (error) throw error
-    return data
+      if (projectError) {
+        console.error('Error fetching project:', projectError)
+        throw projectError
+      }
+
+      // 参加情報を取得（エラーが発生しても続行）
+      let participations = []
+      try {
+        const { data: participationData } = await supabase
+          .from('participations')
+          .select(`
+            *,
+            user:users!user_id (
+              id,
+              first_name,
+              last_name,
+              display_name,
+              avatar_url,
+              profile_image_url
+            )
+          `)
+          .eq('project_id', id)
+        
+        participations = participationData || []
+      } catch (error) {
+        console.warn('Could not fetch participations:', error)
+      }
+
+      // 進捗更新を取得（エラーが発生しても続行）
+      let progressUpdates = []
+      try {
+        const { data: progressData } = await supabase
+          .from('progress_updates')
+          .select(`
+            *,
+            user:users!user_id (
+              id,
+              first_name,
+              last_name,
+              display_name,
+              avatar_url,
+              profile_image_url
+            )
+          `)
+          .eq('project_id', id)
+          .order('created_at', { ascending: false })
+        
+        progressUpdates = progressData || []
+      } catch (error) {
+        console.warn('Could not fetch progress updates:', error)
+      }
+
+      // コメントを取得（エラーが発生しても続行）
+      let comments = []
+      try {
+        const { data: commentData } = await supabase
+          .from('comments')
+          .select(`
+            *,
+            user:users!user_id (
+              id,
+              first_name,
+              last_name,
+              display_name,
+              avatar_url,
+              profile_image_url
+            )
+          `)
+          .eq('project_id', id)
+          .order('created_at', { ascending: false })
+        
+        comments = commentData || []
+      } catch (error) {
+        console.warn('Could not fetch comments:', error)
+      }
+
+      return {
+        ...project,
+        participations,
+        progressUpdates,
+        comments
+      }
+    } catch (error) {
+      console.error('Error in getById:', error)
+      throw error
+    }
   },
 
   // プロジェクト作成
