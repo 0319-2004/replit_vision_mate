@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, X, Github, ExternalLink } from "lucide-react";
+import { UserSkills } from "@/components/user-skills";
 import { Link } from "wouter";
 import { useState } from "react";
 
@@ -209,46 +210,12 @@ export default function ProfileEditPage() {
                 )}
               />
 
-              {/* Skills Section */}
+              {/* Skills Section - Now using dedicated component */}
               <div className="space-y-3">
-                <FormLabel>スキル / Skills</FormLabel>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a skill (e.g. React, Python, Design)"
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                    data-testid="input-skill"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addSkill}
-                    disabled={!skillInput.trim() || skills.length >= 10}
-                    data-testid="button-add-skill"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill, index) => (
-                    <Badge key={index} variant="secondary" className="gap-1">
-                      {skill}
-                      <button
-                        type="button"
-                        onClick={() => removeSkill(skill)}
-                        className="ml-1 hover:bg-destructive/10 rounded-full p-0.5"
-                        data-testid={`button-remove-skill-${skill}`}
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-                {skills.length >= 10 && (
-                  <p className="text-sm text-muted-foreground">Maximum 10 skills</p>
-                )}
+                <FormLabel>スキル管理は下記のスキルセクションで行ってください</FormLabel>
+                <p className="text-sm text-muted-foreground">
+                  協力者検索機能で使用されるスキル情報を管理できます
+                </p>
               </div>
 
               <FormField
@@ -347,6 +314,9 @@ export default function ProfileEditPage() {
           </Form>
         </CardContent>
       </Card>
+
+      {/* Skills Management Section */}
+      <UserSkills isEditable={true} />
     </div>
   );
 }

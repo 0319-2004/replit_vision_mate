@@ -121,6 +121,48 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Project Likes - heart/like functionality
+export const projectLikes = pgTable("project_likes", {
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  // Primary key on user and project combination
+  uniqueIndex("project_likes_pkey").on(table.userId, table.projectId),
+]);
+
+// Project Hides - cross/hide functionality  
+export const projectHides = pgTable("project_hides", {
+  userId: varchar("user_id").notNull(),
+  projectId: varchar("project_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  // Primary key on user and project combination
+  uniqueIndex("project_hides_pkey").on(table.userId, table.projectId),
+]);
+
+// User Skills - for collaborator matching
+export const userSkills = pgTable("user_skills", {
+  userId: varchar("user_id").notNull(),
+  skill: text("skill").notNull(),
+  level: integer("level").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  // Primary key on user and skill combination
+  uniqueIndex("user_skills_pkey").on(table.userId, table.skill),
+]);
+
+// Project Required Skills - for collaborator matching
+export const projectRequiredSkills = pgTable("project_required_skills", {
+  projectId: varchar("project_id").notNull(),
+  skill: text("skill").notNull(),
+  priority: integer("priority").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  // Primary key on project and skill combination
+  uniqueIndex("project_required_skills_pkey").on(table.projectId, table.skill),
+]);
+
 // Define relations
 export const usersRelations = relations(users, ({ many }) => ({
   projects: many(projects),
@@ -255,6 +297,22 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
   createdAt: true,
 });
 
+export const insertProjectLikeSchema = createInsertSchema(projectLikes).omit({
+  createdAt: true,
+});
+
+export const insertProjectHideSchema = createInsertSchema(projectHides).omit({
+  createdAt: true,
+});
+
+export const insertUserSkillSchema = createInsertSchema(userSkills).omit({
+  createdAt: true,
+});
+
+export const insertProjectRequiredSkillSchema = createInsertSchema(projectRequiredSkills).omit({
+  createdAt: true,
+});
+
 // Validation schema for reaction API requests
 export const reactionRequestSchema = z.object({
   targetId: z.string().min(1, "Target ID is required"),
@@ -297,6 +355,18 @@ export type InsertConversation = z.infer<typeof insertConversationSchema>;
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+
+export type ProjectLike = typeof projectLikes.$inferSelect;
+export type InsertProjectLike = z.infer<typeof insertProjectLikeSchema>;
+
+export type ProjectHide = typeof projectHides.$inferSelect;
+export type InsertProjectHide = z.infer<typeof insertProjectHideSchema>;
+
+export type UserSkill = typeof userSkills.$inferSelect;
+export type InsertUserSkill = z.infer<typeof insertUserSkillSchema>;
+
+export type ProjectRequiredSkill = typeof projectRequiredSkills.$inferSelect;
+export type InsertProjectRequiredSkill = z.infer<typeof insertProjectRequiredSkillSchema>;
 
 // Extended types with relations for frontend use
 export type ProjectWithDetails = Project & {

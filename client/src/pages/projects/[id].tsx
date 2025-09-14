@@ -19,6 +19,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { ClapButton, HeroClapButton, CompactClapButton } from "@/components/clap-button";
+import { CollaboratorSearch } from "@/components/collaborator-search";
 import { 
   ArrowLeft, 
   Eye, 
@@ -845,6 +846,11 @@ export default function ProjectDetailPage() {
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {/* Collaborator Search - Only for project owners */}
+          {isCreator && (
+            <CollaboratorSearch projectId={projectId!} isOwner={isCreator} />
           )}
         </div>
       </div>

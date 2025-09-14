@@ -86,52 +86,38 @@ export const projectsApi = {
     }
   },
 
-  // 発見用プロジェクト取得（作成者情報込み）
-  async getForDiscover(): Promise<ProjectWithCreator[]> {
+  // 発見用プロジェクト取得（ページネーション対応）
+  async getForDiscover(limit: number = 12, lastCreatedAt?: string, lastId?: string): Promise<{
+    projects: ProjectWithCreator[],
+    hasMore: boolean,
+    nextCursor: { lastCreatedAt: string, lastId: string } | null
+  }> {
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select(`
-          *,
-          creator:users!creator_id (
-            id,
-            first_name,
-            last_name,
-            display_name,
-            avatar_url,
-            profile_image_url
-          )
-        `)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(20) // パフォーマンス向上のため制限
+      const params = new URLSearchParams();
+      params.append('limit', limit.toString());
+      if (lastCreatedAt) params.append('lastCreatedAt', lastCreatedAt);
+      if (lastId) params.append('lastId', lastId);
 
-      if (error) {
-        console.error('Error fetching projects for discover:', error)
-        throw error
+      const response = await fetch(`/api/projects/discover?${params}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch projects');
       }
 
-      // 参加情報を別途取得（オプション）
-      const projects = data || []
-      for (const project of projects) {
-        try {
-          const { data: participationData } = await supabase
-            .from('participations')
-            .select('id, user_id, type')
-            .eq('project_id', project.id)
-          
-          project.participations = participationData || []
-        } catch (error) {
-          console.warn(`Could not fetch participations for project ${project.id}:`, error)
-          project.participations = []
-        }
-      }
-
-      return projects
+      return await response.json();
     } catch (error) {
       console.error('Error in getForDiscover:', error)
-      return []
+      return {
+        projects: [],
+        hasMore: false,
+        nextCursor: null
+      }
     }
+  },
+
+  // 旧バージョン（互換性のため）
+  async getForDiscoverLegacy(): Promise<ProjectWithCreator[]> {
+    const result = await this.getForDiscover(20);
+    return result.projects;
   },
 
   // プロジェクト詳細取得
@@ -603,6 +589,266 @@ export const messagesApi = {
       .eq('id', conversationId)
 
     return data
+  },
+}
+
+// Project Likes API
+export const projectLikesApi = {
+  // いいね切り替え
+  async toggle(projectId: string) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    // 既存のいいねをチェック
+    const { data: existingLike, error: checkError } = await supabase
+      .from('project_likes')
+      .select('*')
+      .eq('project_id', projectId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (checkError && checkError.code !== 'PGRST116') throw checkError
+
+    if (existingLike) {
+      // いいね削除
+      const { error } = await supabase
+        .from('project_likes')
+        .delete()
+        .eq('project_id', projectId)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+      return { action: 'removed' as const }
+    } else {
+      // いいね追加
+      const { data, error } = await supabase
+        .from('project_likes')
+        .insert({
+          project_id: projectId,
+          user_id: user.id,
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      return { action: 'added' as const, data }
+    }
+  },
+
+  // ユーザーがいいねしたプロジェクト一覧取得
+  async getUserLikes(limit: number = 12, lastCreatedAt?: string) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    let query = supabase
+      .from('project_likes')
+      .select(`
+        created_at,
+        project:projects!project_id (
+          *,
+          creator:users!creator_id (
+            id,
+            first_name,
+            profile_image_url
+          )
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (lastCreatedAt) {
+      query = query.lt('created_at', lastCreatedAt)
+    }
+
+    const { data, error } = await query.limit(limit)
+
+    if (error) throw error
+    return data || []
+  },
+}
+
+// Project Hides API
+export const projectHidesApi = {
+  // 非表示切り替え
+  async toggle(projectId: string) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    // 既存の非表示をチェック
+    const { data: existingHide, error: checkError } = await supabase
+      .from('project_hides')
+      .select('*')
+      .eq('project_id', projectId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (checkError && checkError.code !== 'PGRST116') throw checkError
+
+    if (existingHide) {
+      // 非表示削除（再表示）
+      const { error } = await supabase
+        .from('project_hides')
+        .delete()
+        .eq('project_id', projectId)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+      return { action: 'removed' as const }
+    } else {
+      // 非表示追加
+      const { data, error } = await supabase
+        .from('project_hides')
+        .insert({
+          project_id: projectId,
+          user_id: user.id,
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      return { action: 'added' as const, data }
+    }
+  },
+}
+
+// User Skills API
+export const userSkillsApi = {
+  // ユーザーのスキル取得
+  async getUserSkills(userId?: string) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const targetUserId = userId || user.id;
+
+    const { data, error } = await supabase
+      .from('user_skills')
+      .select('*')
+      .eq('user_id', targetUserId)
+      .order('skill')
+
+    if (error) throw error
+    return data || []
+  },
+
+  // スキル追加/更新
+  async upsertSkill(skill: string, level: number = 1) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const { data, error } = await supabase
+      .from('user_skills')
+      .upsert({
+        user_id: user.id,
+        skill,
+        level,
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  // スキル削除
+  async removeSkill(skill: string) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const { error } = await supabase
+      .from('user_skills')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('skill', skill)
+
+    if (error) throw error
+  },
+}
+
+// Project Required Skills API  
+export const projectRequiredSkillsApi = {
+  // プロジェクトの必要スキル取得
+  async getProjectSkills(projectId: string) {
+    const { data, error } = await supabase
+      .from('project_required_skills')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('priority', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  },
+
+  // 必要スキル追加/更新
+  async upsertSkill(projectId: string, skill: string, priority: number = 1) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const { data, error } = await supabase
+      .from('project_required_skills')
+      .upsert({
+        project_id: projectId,
+        skill,
+        priority,
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  // 必要スキル削除
+  async removeSkill(projectId: string, skill: string) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const { error } = await supabase
+      .from('project_required_skills')
+      .delete()
+      .eq('project_id', projectId)
+      .eq('skill', skill)
+
+    if (error) throw error
+  },
+
+  // 協力者候補検索（RPCファンクション使用）
+  async searchCandidates(
+    projectId: string, 
+    matchAll: boolean = false,
+    minOverlap: number = 1,
+    limit: number = 20,
+    offset: number = 0
+  ) {
+    const { data, error } = await supabase
+      .rpc('search_candidates_for_project', {
+        pid: projectId,
+        match_all: matchAll,
+        min_overlap: minOverlap,
+        limit_n: limit,
+        offset_n: offset
+      })
+
+    if (error) throw error
+
+    // ユーザー情報を別途取得
+    if (data && data.length > 0) {
+      const userIds = data.map((candidate: any) => candidate.user_id);
+      
+      const { data: users, error: usersError } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, display_name, avatar_url, profile_image_url')
+        .in('id', userIds)
+
+      if (usersError) throw usersError
+
+      // データを結合
+      return data.map((candidate: any) => ({
+        ...candidate,
+        user: users?.find((u: any) => u.id === candidate.user_id)
+      }))
+    }
+
+    return data || []
   },
 }
 

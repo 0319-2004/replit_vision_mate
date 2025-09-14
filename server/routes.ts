@@ -87,8 +87,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Discover projects with creator info for discover mode (safe public data only)
   app.get('/api/projects/discover', async (req, res) => {
     try {
-      const projects = await storage.getAllProjectsForDiscover();
-      res.json(projects);
+      const limit = parseInt(req.query.limit as string) || 12;
+      const lastCreatedAt = req.query.lastCreatedAt as string;
+      const lastId = req.query.lastId as string;
+
+      const projects = await storage.getProjectsForDiscoverPaginated(limit, lastCreatedAt, lastId);
+      res.json({
+        projects,
+        hasMore: projects.length === limit,
+        nextCursor: projects.length > 0 ? {
+          lastCreatedAt: projects[projects.length - 1].createdAt,
+          lastId: projects[projects.length - 1].id
+        } : null
+      });
     } catch (error) {
       console.error("Error fetching projects for discover:", error);
       res.status(500).json({ message: "Failed to fetch projects for discover mode" });

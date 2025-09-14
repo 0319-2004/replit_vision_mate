@@ -17,6 +17,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import LandingPage from "@/pages/landing";
 import HomePage from "@/pages/home";
 import DiscoverPage from "@/pages/discover";
+import LikesPage from "@/pages/likes";
 import CreateProjectPage from "@/pages/projects/new";
 import MyProjectsPage from "@/pages/projects/mine";
 import ProjectDetailPage from "@/pages/projects/[id]";
@@ -33,6 +34,7 @@ function AuthenticatedRouter() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/discover" component={DiscoverPage} />
+      <Route path="/likes" component={LikesPage} />
       <Route path="/projects/new" component={CreateProjectPage} />
       <Route path="/projects/mine" component={MyProjectsPage} />
       <Route path="/projects/:id" component={ProjectDetailPage} />

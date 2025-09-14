@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,6 +19,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
 import type { Project, PublicUser } from "@shared/schema";
 import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
+import { projectsApi, projectLikesApi, projectHidesApi } from "@/lib/supabaseApi";
 
 // Extended project type with safe creator info (no private data)
 type ProjectWithCreator = Project & {
@@ -28,29 +29,113 @@ type ProjectWithCreator = Project & {
 
 export default function DiscoverPage() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [allProjects, setAllProjects] = useState<ProjectWithCreator[]>([]);
+  const [nextCursor, setNextCursor] = useState<{ lastCreatedAt: string, lastId: string } | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // Motion values for swipe animation
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 0, 200], [-25, 0, 25]);
   const opacity = useTransform(x, [-200, -150, 0, 150, 200], [0, 1, 1, 1, 0]);
 
-  const { data: projects = [], isLoading } = useQuery<ProjectWithCreator[]>({
-    queryKey: ["/api/projects/discover"],
+  // Initial load
+  const { data: initialData, isLoading } = useQuery({
+    queryKey: ["projects", "discover", "initial"],
+    queryFn: () => projectsApi.getForDiscover(12),
+  });
+
+  // Load more projects when needed
+  const loadMoreProjects = async () => {
+    if (!nextCursor || loadingMore) return;
+    
+    setLoadingMore(true);
+    try {
+      const moreData = await projectsApi.getForDiscover(12, nextCursor.lastCreatedAt, nextCursor.lastId);
+      setAllProjects(prev => [...prev, ...moreData.projects]);
+      setNextCursor(moreData.nextCursor);
+    } catch (error) {
+      console.error('Failed to load more projects:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // Initialize projects when initial data loads
+  useEffect(() => {
+    if (initialData) {
+      setAllProjects(initialData.projects);
+      setNextCursor(initialData.nextCursor);
+    }
+  }, [initialData]);
+
+  // Load more projects when approaching end
+  useEffect(() => {
+    if (currentIndex >= allProjects.length - 2 && nextCursor && !loadingMore) {
+      loadMoreProjects();
+    }
+  }, [currentIndex, allProjects.length, nextCursor, loadingMore]);
+
+  // Like mutation
+  const likeMutation = useMutation({
+    mutationFn: (projectId: string) => projectLikesApi.toggle(projectId),
+    onSuccess: (data, projectId) => {
+      toast({
+        title: data.action === 'added' ? "プロジェクトをいいねしました！" : "いいねを取り消しました",
+        description: data.action === 'added' ? "素晴らしいプロジェクトですね！" : "",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "エラーが発生しました",
+        description: "しばらく待ってからもう一度お試しください。",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Hide mutation
+  const hideMutation = useMutation({
+    mutationFn: (projectId: string) => projectHidesApi.toggle(projectId),
+    onSuccess: () => {
+      toast({
+        title: "プロジェクトを非表示にしました",
+        description: "このプロジェクトは今後表示されません。",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "エラーが発生しました", 
+        description: "しばらく待ってからもう一度お試しください。",
+        variant: "destructive",
+      });
+    },
   });
 
   // Get current project
-  const currentProject = projects[currentIndex];
+  const currentProject = allProjects[currentIndex];
 
   const handleSwipe = (direction: 'left' | 'right') => {
+    if (!currentProject) return;
+    
     setSwipeDirection(direction);
+    
+    // Trigger action based on swipe direction
+    if (direction === 'left') {
+      // Hide project (optimistic)
+      hideMutation.mutate(currentProject.id);
+    } else if (direction === 'right') {
+      // Like project (optimistic) 
+      likeMutation.mutate(currentProject.id);
+    }
     
     // Move to next project after animation
     setTimeout(() => {
       setCurrentIndex(prev => {
         const nextIndex = prev + 1;
-        if (nextIndex >= projects.length) {
+        if (nextIndex >= allProjects.length && !nextCursor) {
           // Show completion message and reset
           toast({
             title: "すべてのプロジェクトを見ました！",
@@ -96,7 +181,7 @@ export default function DiscoverPage() {
     );
   }
 
-  if (!projects.length) {
+  if (!allProjects.length && !isLoading) {
     return (
       <div className="max-w-md mx-auto px-4 py-8">
         <Card>
@@ -132,7 +217,8 @@ export default function DiscoverPage() {
         <div className="flex-1 text-center">
           <h1 className="text-2xl font-bold">発見</h1>
           <p className="text-sm text-muted-foreground">
-            {currentIndex + 1} of {projects.length}
+            {currentIndex + 1} of {allProjects.length}{nextCursor ? '+' : ''}
+            {loadingMore && ' (読み込み中...)'}
           </p>
         </div>
       </div>
@@ -211,20 +297,32 @@ export default function DiscoverPage() {
           size="icon"
           className="rounded-full w-14 h-14"
           onClick={() => handleSwipe('left')}
-          data-testid="button-pass"
+          disabled={hideMutation.isPending}
+          data-testid="button-hide"
         >
           <X className="w-6 h-6 text-red-500" />
         </Button>
-        
+
         <Link href={`/projects/${currentProject.id}`}>
           <Button
+            variant="outline"
             size="icon"
-            className="rounded-full w-14 h-14 bg-primary hover:bg-primary/90"
+            className="rounded-full w-12 h-12"
             data-testid="button-view-project"
           >
-            <Heart className="w-6 h-6" />
+            <Eye className="w-5 h-5" />
           </Button>
         </Link>
+        
+        <Button
+          size="icon"
+          className="rounded-full w-14 h-14 bg-red-500 hover:bg-red-600"
+          onClick={() => handleSwipe('right')}
+          disabled={likeMutation.isPending}
+          data-testid="button-like"
+        >
+          <Heart className="w-6 h-6 text-white" />
+        </Button>
       </div>
 
       {/* Swipe Instructions */}

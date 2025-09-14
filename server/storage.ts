@@ -29,7 +29,7 @@ import {
   type MessageWithSender,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { eq, desc, and, inArray, or, lt } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -46,6 +46,7 @@ export interface IStorage {
   getAllProjects(): Promise<Project[]>;
   getAllProjectsWithCreators(): Promise<Array<Project & { creator: User; participations: Participation[] }>>;
   getAllProjectsForDiscover(): Promise<Array<Project & { creator: PublicUser; participations: Participation[] }>>;
+  getProjectsForDiscoverPaginated(limit?: number, lastCreatedAt?: string, lastId?: string): Promise<Array<Project & { creator: PublicUser; participations: Participation[] }>>;
   updateProject(id: string, updates: Partial<InsertProject>): Promise<Project>;
   deleteProject(id: string): Promise<void>;
   
@@ -216,7 +217,8 @@ export class DatabaseStorage implements IStorage {
       .from(projects)
       .innerJoin(users, eq(projects.creatorId, users.id))
       .where(eq(projects.isActive, true))
-      .orderBy(desc(projects.createdAt));
+      .orderBy(desc(projects.createdAt))
+      .limit(20); // Limit for performance
 
     // Get participations separately
     const projectIds = projectsData.map(p => p.id);
@@ -240,6 +242,65 @@ export class DatabaseStorage implements IStorage {
     }));
 
     return result as Array<Project & { creator: PublicUser; participations: Participation[] }>;
+  }
+
+  // New paginated method for better performance
+  async getProjectsForDiscoverPaginated(limit: number = 12, lastCreatedAt?: string, lastId?: string): Promise<Array<Project & { creator: PublicUser; participations: Participation[] }>> {
+    let query = db
+      .select({
+        id: projects.id,
+        title: projects.title,
+        description: projects.description,
+        creatorId: projects.creatorId,
+        isActive: projects.isActive,
+        createdAt: projects.createdAt,
+        updatedAt: projects.updatedAt,
+        creatorPublic: {
+          id: users.id,
+          firstName: users.firstName,
+          profileImageUrl: users.profileImageUrl,
+        },
+      })
+      .from(projects)
+      .innerJoin(users, eq(projects.creatorId, users.id))
+      .where(eq(projects.isActive, true));
+
+    // Cursor-based pagination using created_at and id
+    if (lastCreatedAt && lastId) {
+      query = query.where(
+        or(
+          lt(projects.createdAt, new Date(lastCreatedAt)),
+          and(
+            eq(projects.createdAt, new Date(lastCreatedAt)),
+            lt(projects.id, lastId)
+          )
+        )
+      );
+    }
+
+    const projectsData = await query
+      .orderBy(desc(projects.createdAt), desc(projects.id))
+      .limit(limit);
+
+    // Get participations separately for better performance
+    const projectIds = projectsData.map(p => p.id);
+    const participationsData = projectIds.length > 0 
+      ? await db.select().from(participations).where(
+          inArray(participations.projectId, projectIds)
+        )
+      : [];
+
+    return projectsData.map(projectData => ({
+      id: projectData.id,
+      title: projectData.title,
+      description: projectData.description,
+      creatorId: projectData.creatorId,
+      isActive: projectData.isActive,
+      createdAt: projectData.createdAt,
+      updatedAt: projectData.updatedAt,
+      creator: projectData.creatorPublic,
+      participations: participationsData.filter(p => p.projectId === projectData.id),
+    })) as Array<Project & { creator: PublicUser; participations: Participation[] }>;
   }
 
   async updateProject(id: string, updates: Partial<InsertProject>): Promise<Project> {
