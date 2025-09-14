@@ -49,13 +49,13 @@ function AuthenticatedRouter() {
 function AppRouter() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // 15秒以上ローディングの場合、強制的にリロード（最後の手段）
+  // 20秒以上ローディングの場合、強制的にリロード（最後の手段）
   useEffect(() => {
     if (isLoading) {
       const timeout = setTimeout(() => {
-        console.log('🚨 Forcing page reload after 15 seconds as last resort');
+        console.log('🚨 Forcing page reload after 20 seconds as last resort');
         window.location.reload();
-      }, 15000);
+      }, 20000);
       return () => clearTimeout(timeout);
     }
   }, [isLoading]);

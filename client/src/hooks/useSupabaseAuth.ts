@@ -16,39 +16,25 @@ export function useSupabaseAuth() {
       console.log('🔄 Getting initial session...')
       
       try {
-        // タイムアウト付きでセッション取得（10秒に延長）
-        const timeoutMs = 10000
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => {
-          controller.abort()
-          console.log('⚠️ Session timeout after 10 seconds, continuing without auth')
-        }, timeoutMs)
-        
         const { data: { session }, error } = await supabase.auth.getSession()
-        clearTimeout(timeoutId)
-        
-        console.log('📝 Initial session result:', { session: !!session, error })
         
         if (error) {
-          console.error('❌ Error getting session:', error)
-          // エラーがあっても続行（非認証状態として処理）
+          console.warn('⚠️ Session error (continuing as unauthenticated):', error)
           setSession(null)
           setUser(null)
         } else {
           setSession(session)
           setUser(session?.user ?? null)
-          console.log('✅ Session set successfully:', { user: !!session?.user })
+          console.log('✅ Session loaded:', { hasSession: !!session, hasUser: !!session?.user })
         }
         
       } catch (err) {
-        console.error('💥 Unexpected error in getInitialSession:', err)
-        // どんなエラーでも非認証状態として処理
+        console.warn('⚠️ Session load failed (continuing as unauthenticated):', err)
         setSession(null)
         setUser(null)
       } finally {
-        // 必ずローディング状態を終了
         setIsLoading(false)
-        console.log('🏁 Initial session loading complete')
+        console.log('🏁 Session initialization complete')
       }
     }
 
