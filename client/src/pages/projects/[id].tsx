@@ -79,7 +79,13 @@ function ProgressUpdateCard({
         </Avatar>
         <span className="font-medium">{update.title}</span>
         <span className="text-sm text-muted-foreground">
-          {formatDistanceToNow(new Date(update.createdAt), { addSuffix: true })}
+          {(() => {
+            try {
+              return formatDistanceToNow(new Date(update.createdAt || Date.now()), { addSuffix: true });
+            } catch (e) {
+              return 'recently';
+            }
+          })()}
         </span>
       </div>
       <p className="text-muted-foreground mb-3">{update.content}</p>
@@ -472,7 +478,13 @@ export default function ProjectDetailPage() {
             </div>
             <div className="flex items-center gap-1">
               <Calendar className="w-4 h-4" />
-              <span>{formatDistanceToNow(new Date(project.createdAt!), { addSuffix: true })}</span>
+              <span>{(() => {
+                try {
+                  return formatDistanceToNow(new Date(project.createdAt || Date.now()), { addSuffix: true });
+                } catch (e) {
+                  return 'recently';
+                }
+              })()}</span>
             </div>
           </div>
         </div>
@@ -703,7 +715,13 @@ export default function ProjectDetailPage() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium">{comment.user.firstName || 'Anonymous User'}</span>
                           <span className="text-sm text-muted-foreground">
-                            {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                            {(() => {
+                              try {
+                                return formatDistanceToNow(new Date(comment.createdAt || Date.now()), { addSuffix: true });
+                              } catch (e) {
+                                return 'recently';
+                              }
+                            })()}
                           </span>
                         </div>
                         <p className="text-muted-foreground">{comment.content}</p>

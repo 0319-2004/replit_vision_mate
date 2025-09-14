@@ -230,12 +230,22 @@ export const projectsApi = {
         console.warn('Could not fetch comments:', error)
       }
 
-      return {
+      // データの正規化とクリーンアップ
+      const cleanProject = {
         ...project,
-        participations,
-        progressUpdates,
-        comments
+        participations: participations || [],
+        progressUpdates: (progressUpdates || []).map(update => ({
+          ...update,
+          createdAt: update.created_at || update.createdAt || new Date().toISOString()
+        })),
+        comments: (comments || []).map(comment => ({
+          ...comment,
+          createdAt: comment.created_at || comment.createdAt || new Date().toISOString()
+        })),
+        createdAt: project.created_at || project.createdAt || new Date().toISOString()
       }
+
+      return cleanProject
     } catch (error) {
       console.error('Error in getById:', error)
       throw error
