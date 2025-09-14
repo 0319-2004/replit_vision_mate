@@ -4,16 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, Github, ExternalLink, Settings } from "lucide-react";
+import { Edit, Github, ExternalLink, Settings, GraduationCap, Building } from "lucide-react";
 import { Link } from "wouter";
 import { formatDistanceToNow } from "date-fns";
 
 export default function ProfilePage() {
   const { user } = useAuth();
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading, error } = useQuery({
     queryKey: ['/api/auth/user'],
+    retry: 1,
   });
+
+  // デバッグ用ログ
+  console.log('Profile page - user:', user);
+  console.log('Profile page - profile:', profile);
+  console.log('Profile page - error:', error);
 
   if (isLoading) {
     return (
@@ -26,13 +32,29 @@ export default function ProfilePage() {
     );
   }
 
-  if (!profile || !user) {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-full max-w-md text-center">
           <CardContent className="pt-6">
-            <h3 className="text-lg font-medium mb-2">プロフィールが見つかりません</h3>
-            <p className="text-muted-foreground">Profile not found</p>
+            <h3 className="text-lg font-medium mb-2">認証が必要です</h3>
+            <p className="text-muted-foreground">Authentication required</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-medium mb-2">プロフィールを読み込めません</h3>
+            <p className="text-muted-foreground mb-4">Profile could not be loaded</p>
+            <Link href="/profile/edit">
+              <Button>プロフィールを作成 / Create Profile</Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -40,8 +62,8 @@ export default function ProfilePage() {
   }
 
   const profileData = profile as any;
-  const displayName = profileData.displayName || `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim();
-  const joinedDate = new Date(profileData.createdAt);
+  const displayName = profileData.display_name || profileData.displayName || `${profileData.first_name || profileData.firstName || ''} ${profileData.last_name || profileData.lastName || ''}`.trim();
+  const joinedDate = new Date(profileData.created_at || profileData.createdAt);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -59,7 +81,7 @@ export default function ProfilePage() {
         <CardHeader>
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
             <Avatar className="w-24 h-24">
-              <AvatarImage src={profileData.avatarUrl || profileData.profileImageUrl} />
+              <AvatarImage src={profileData.avatar_url || profileData.avatarUrl || profileData.profile_image_url || profileData.profileImageUrl} />
               <AvatarFallback className="text-2xl">
                 {(displayName || 'U').charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -84,12 +106,30 @@ export default function ProfilePage() {
                 </p>
               )}
 
+              {/* Education Info */}
+              {(profileData.university || profileData.department) && (
+                <div className="mb-4">
+                  {profileData.university && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <GraduationCap className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">{profileData.university}</span>
+                    </div>
+                  )}
+                  {profileData.department && (
+                    <div className="flex items-center gap-2">
+                      <Building className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">{profileData.department}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* External Links */}
               <div className="flex gap-3">
-                {profileData.githubUrl && (
+                {(profileData.github_url || profileData.githubUrl) && (
                   <Button variant="outline" size="sm" asChild>
                     <a 
-                      href={profileData.githubUrl} 
+                      href={profileData.github_url || profileData.githubUrl} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       data-testid="link-github"
@@ -99,10 +139,10 @@ export default function ProfilePage() {
                     </a>
                   </Button>
                 )}
-                {profileData.portfolioUrl && (
+                {(profileData.portfolio_url || profileData.portfolioUrl) && (
                   <Button variant="outline" size="sm" asChild>
                     <a 
-                      href={profileData.portfolioUrl} 
+                      href={profileData.portfolio_url || profileData.portfolioUrl} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       data-testid="link-portfolio"

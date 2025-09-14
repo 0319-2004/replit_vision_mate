@@ -433,7 +433,46 @@ export const usersApi = {
 
     if (error) {
       console.error('Error fetching current user:', error)
-      // ユーザーが存在しない場合は基本情報を返す
+      
+      // ユーザーが存在しない場合は自動作成を試行
+      if (error.code === 'PGRST116') { // No rows found
+        console.log('User not found in users table, creating...')
+        
+        const newUserData = {
+          id: user.id,
+          email: user.email,
+          first_name: user.user_metadata?.first_name || null,
+          last_name: user.user_metadata?.last_name || null,
+          avatar_url: user.user_metadata?.avatar_url || null,
+          display_name: null,
+          bio: null,
+          skills: [],
+          github_url: null,
+          portfolio_url: null,
+          university: null,
+          department: null,
+        }
+        
+        const { data: createdUser, error: createError } = await supabase
+          .from('users')
+          .insert(newUserData)
+          .select()
+          .single()
+          
+        if (createError) {
+          console.error('Error creating user:', createError)
+          // 作成に失敗した場合は基本情報を返す
+          return {
+            ...newUserData,
+            created_at: user.created_at,
+            updated_at: new Date().toISOString()
+          }
+        }
+        
+        return createdUser
+      }
+      
+      // その他のエラーの場合は基本情報を返す
       return {
         id: user.id,
         email: user.email,
