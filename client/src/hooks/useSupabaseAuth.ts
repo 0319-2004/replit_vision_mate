@@ -7,17 +7,29 @@ export function useSupabaseAuth() {
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // デバッグ用ログ
+  console.log('🔐 useSupabaseAuth state:', { user: !!user, session: !!session, isLoading })
+
   useEffect(() => {
     // 初期セッション取得
     const getInitialSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession()
-      if (error) {
-        console.error('Error getting session:', error)
-      } else {
-        setSession(session)
-        setUser(session?.user ?? null)
+      console.log('🔄 Getting initial session...')
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        console.log('📝 Initial session result:', { session: !!session, error })
+        if (error) {
+          console.error('❌ Error getting session:', error)
+        } else {
+          setSession(session)
+          setUser(session?.user ?? null)
+          console.log('✅ Session set successfully:', { user: !!session?.user })
+        }
+        setIsLoading(false)
+        console.log('🏁 Initial session loading complete')
+      } catch (err) {
+        console.error('💥 Unexpected error in getInitialSession:', err)
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
 
     getInitialSession()

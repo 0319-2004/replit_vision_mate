@@ -23,6 +23,7 @@ import ProfileEditPage from "@/pages/profile/edit";
 import PublicProfilePage from "@/pages/profile/[id]";
 import MessagesPage from "@/pages/messages/index";
 import SettingsPage from "@/pages/settings";
+import DebugPage from "@/pages/debug";
 import NotFound from "@/pages/not-found";
 
 function AuthenticatedRouter() {
@@ -38,6 +39,7 @@ function AuthenticatedRouter() {
       <Route path="/profile/:id" component={PublicProfilePage} />
       <Route path="/messages" component={MessagesPage} />
       <Route path="/settings" component={SettingsPage} />
+      <Route path="/debug" component={DebugPage} />
       <Route component={NotFound} />
     </Switch>
   );

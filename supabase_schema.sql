@@ -3,10 +3,21 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- First, drop the table if it exists (for clean setup)
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS projects CASCADE;
+DROP TABLE IF EXISTS participations CASCADE;
+DROP TABLE IF EXISTS progress_updates CASCADE;
+DROP TABLE IF EXISTS comments CASCADE;
+DROP TABLE IF EXISTS reactions CASCADE;
+DROP TABLE IF EXISTS conversations CASCADE;
+DROP TABLE IF EXISTS messages CASCADE;
+
 -- Users table (Supabase Authと統合)
+-- auth.usersテーブルと連携するカスタムプロファイルテーブル
 CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  email VARCHAR UNIQUE,
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email VARCHAR,
   first_name VARCHAR,
   last_name VARCHAR,
   profile_image_url VARCHAR,
@@ -180,6 +191,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function to handle new user registration
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.users (id, email, first_name, last_name, avatar_url)
+    VALUES (
+        NEW.id,
+        NEW.email,
+        NEW.raw_user_meta_data->>'first_name',
+        NEW.raw_user_meta_data->>'last_name',
+        NEW.raw_user_meta_data->>'avatar_url'
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Triggers for auto-updating timestamps
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -189,3 +216,8 @@ CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON projects
 
 CREATE TRIGGER update_conversations_updated_at BEFORE UPDATE ON conversations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Trigger for auto-creating user profiles
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION handle_new_user();
