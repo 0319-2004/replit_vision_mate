@@ -420,6 +420,40 @@ export const messagesApi = {
 
 // Users API
 export const usersApi = {
+  // 現在のユーザー取得
+  async getCurrentUser() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+
+    if (error) {
+      console.error('Error fetching current user:', error)
+      // ユーザーが存在しない場合は基本情報を返す
+      return {
+        id: user.id,
+        email: user.email,
+        first_name: user.user_metadata?.first_name || null,
+        last_name: user.user_metadata?.last_name || null,
+        avatar_url: user.user_metadata?.avatar_url || null,
+        display_name: null,
+        bio: null,
+        skills: [],
+        github_url: null,
+        portfolio_url: null,
+        university: null,
+        department: null,
+        created_at: user.created_at,
+        updated_at: new Date().toISOString()
+      }
+    }
+    return data
+  },
+
   // プロフィール取得
   async getProfile(userId: string) {
     const { data, error } = await supabase
@@ -439,6 +473,9 @@ export const usersApi = {
     skills?: string[] | null
     github_url?: string | null
     portfolio_url?: string | null
+    university?: string | null
+    department?: string | null
+    avatar_url?: string | null
   }) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Not authenticated')

@@ -23,6 +23,8 @@ const profileSchema = z.object({
   bio: z.string().max(500).optional().or(z.literal('')),
   githubUrl: z.string().url().optional().or(z.literal('')),
   portfolioUrl: z.string().url().optional().or(z.literal('')),
+  university: z.string().max(100).optional().or(z.literal('')),
+  department: z.string().max(100).optional().or(z.literal('')),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -52,6 +54,8 @@ export default function ProfileEditPage() {
       bio: '',
       githubUrl: '',
       portfolioUrl: '',
+      university: '',
+      department: '',
     },
   });
 
@@ -60,17 +64,32 @@ export default function ProfileEditPage() {
     if (profile) {
       const profileData = profile as any;
       form.reset({
-        displayName: profileData.displayName || '',
+        displayName: profileData.displayName || profileData.display_name || '',
         bio: profileData.bio || '',
-        githubUrl: profileData.githubUrl || '',
-        portfolioUrl: profileData.portfolioUrl || '',
+        githubUrl: profileData.githubUrl || profileData.github_url || '',
+        portfolioUrl: profileData.portfolioUrl || profileData.portfolio_url || '',
+        university: profileData.university || '',
+        department: profileData.department || '',
       });
     }
   }, [profile, form]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: ProfileFormData & { skills: string[] }) => {
-      return apiRequest('PUT', '/api/profile', data);
+      // Convert to snake_case for Supabase
+      const supabaseData = {
+        display_name: data.displayName || null,
+        bio: data.bio || null,
+        github_url: data.githubUrl || null,
+        portfolio_url: data.portfolioUrl || null,
+        university: data.university || null,
+        department: data.department || null,
+        skills: data.skills || []
+      };
+      
+      // Use Supabase API directly
+      const { usersApi } = await import('@/lib/supabaseApi');
+      return await usersApi.updateProfile(supabaseData);
     },
     onSuccess: () => {
       toast({
@@ -267,6 +286,42 @@ export default function ProfileEditPage() {
                         placeholder="https://yourportfolio.com" 
                         {...field}
                         data-testid="input-portfolio"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="university"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>大学 / University</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="e.g. 東京大学, University of Tokyo" 
+                        {...field}
+                        data-testid="input-university"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="department"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>学部・学科 / Department</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="e.g. 工学部情報工学科, Computer Science" 
+                        {...field}
+                        data-testid="input-department"
                       />
                     </FormControl>
                     <FormMessage />

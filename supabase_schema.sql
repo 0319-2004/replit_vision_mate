@@ -27,6 +27,8 @@ CREATE TABLE users (
   github_url VARCHAR,
   portfolio_url VARCHAR,
   avatar_url VARCHAR,
+  university VARCHAR(100),
+  department VARCHAR(100),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

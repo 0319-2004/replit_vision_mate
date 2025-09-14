@@ -27,24 +27,33 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const path = queryKey.join("/") as string;
     
-    // Handle Supabase API calls
-    try {
-      if (path === "/api/projects") {
-        return await api.projects.getAll() as T;
-      }
-      
-      if (path === "/api/projects/discover") {
-        return await api.projects.getForDiscover() as T;
-      }
-      
-      if (path.startsWith("/api/projects/") && !path.includes("/")) {
-        const projectId = path.split("/")[3];
-        return await api.projects.getById(projectId) as T;
-      }
-      
-      if (path === "/api/conversations") {
-        return await api.messages.getConversations() as T;
-      }
+                // Handle Supabase API calls
+                try {
+                  if (path === "/api/projects") {
+                    return await api.projects.getAll() as T;
+                  }
+                  
+                  if (path === "/api/projects/discover") {
+                    return await api.projects.getForDiscover() as T;
+                  }
+                  
+                  if (path.startsWith("/api/projects/") && path.split("/").length === 4) {
+                    const projectId = path.split("/")[3];
+                    return await api.projects.getById(projectId) as T;
+                  }
+                  
+                  if (path === "/api/conversations") {
+                    return await api.messages.getConversations() as T;
+                  }
+                  
+                  if (path.startsWith("/api/conversations/") && path.split("/").length === 4) {
+                    const conversationId = path.split("/")[3];
+                    return await api.messages.getConversationById(conversationId) as T;
+                  }
+                  
+                  if (path === "/api/auth/user") {
+                    return await api.users.getCurrentUser() as T;
+                  }
       
       // Legacy API fallback
       const res = await fetch(path, {
@@ -94,11 +103,16 @@ export async function apiRequest(
       return new Response(JSON.stringify(result), { status: 201 });
     }
     
-    if (url === '/api/reactions' && method === 'POST') {
-      const { targetId, targetType } = data as any;
-      const result = await api.reactions.toggle(targetId, targetType);
-      return new Response(JSON.stringify(result), { status: 200 });
-    }
+                if (url === '/api/reactions' && method === 'POST') {
+                  const { targetId, targetType } = data as any;
+                  const result = await api.reactions.toggle(targetId, targetType);
+                  return new Response(JSON.stringify(result), { status: 200 });
+                }
+                
+                if (url === '/api/profile' && method === 'PUT') {
+                  const result = await api.users.updateProfile(data as any);
+                  return new Response(JSON.stringify(result), { status: 200 });
+                }
   } catch (error) {
     throw new Error(`Supabase API Error: ${error.message}`);
   }
