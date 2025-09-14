@@ -9,9 +9,18 @@ import type { Project, User } from "@shared/schema";
 
 export default function HomePage() {
   const { user } = useAuth();
-  const { data: projects = [], isLoading } = useQuery<Project[]>({
+  
+  // デバッグ用：認証状態をログ出力
+  console.log('Current user:', user);
+  console.log('Is user logged in:', !!user);
+  const { data: projects = [], isLoading, error } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
+
+  // デバッグ用：プロジェクトクエリの状態をログ出力
+  console.log('Projects loading:', isLoading);
+  console.log('Projects data:', projects);
+  console.log('Projects error:', error);
 
   if (isLoading) {
     return (
