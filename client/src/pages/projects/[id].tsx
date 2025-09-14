@@ -107,6 +107,17 @@ export default function ProjectDetailPage() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isCommentFormVisible, setIsCommentFormVisible] = useState(false);
 
+  // 早期デバッグ表示
+  if (!match) {
+    console.log('No route match found');
+    return <div>Route not matched</div>;
+  }
+
+  if (!projectId) {
+    console.log('No project ID found in params:', params);
+    return <div>Project ID not found</div>;
+  }
+
   const { data: project, isLoading, error } = useQuery<ProjectWithDetails>({
     queryKey: ["/api/projects", projectId],
     enabled: !!projectId,
@@ -118,6 +129,8 @@ export default function ProjectDetailPage() {
   console.log('Project detail - projectId:', projectId);
   console.log('Project detail - project:', project);
   console.log('Project detail - error:', error);
+  console.log('Project detail - isLoading:', isLoading);
+  console.log('Project detail - user:', user);
 
   // Query for reactions
   const { data: projectReactionsData } = useQuery({
@@ -351,7 +364,8 @@ export default function ProjectDetailPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">プロジェクトを読み込み中...</p>
-          <p className="text-sm text-gray-500 mt-2">Loading project...</p>
+          <p className="text-sm text-gray-500 mt-2">Loading project ID: {projectId}</p>
+          <p className="text-xs text-gray-400 mt-1">User: {user ? 'Authenticated' : 'Not authenticated'}</p>
         </div>
       </div>
     );
@@ -417,6 +431,15 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* 一時的なデバッグ情報 */}
+      <div className="mb-4 p-4 bg-gray-100 rounded text-xs">
+        <p><strong>Debug Info:</strong></p>
+        <p>Project ID: {projectId}</p>
+        <p>Project loaded: {project ? 'Yes' : 'No'}</p>
+        <p>User authenticated: {user ? 'Yes' : 'No'}</p>
+        <p>Error: {error ? error.message : 'None'}</p>
+        <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
+      </div>
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Button 
