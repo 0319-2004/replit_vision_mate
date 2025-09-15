@@ -31,31 +31,40 @@ export function useSupabaseAuth() {
       }
     }
 
-    // 安全装置：10秒後に強制終了（GitHub Pagesでは応答が遅い場合がある）
-    timeoutId = setTimeout(forceLoadingComplete, 10000)
+    // 安全装置：15秒後に強制終了（GitHub Pagesでは応答が遅い場合がある）
+    timeoutId = setTimeout(forceLoadingComplete, 15000)
 
     // 初期セッション取得
     const getInitialSession = async () => {
       console.log('🔄 Getting initial session...')
       
       try {
+        // まず現在のセッションを確認
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (isCompleted) return // 既に完了済みの場合は何もしない
         
         if (error) {
-          console.log('ℹ️ Session error - continuing as guest user')
+          console.log('ℹ️ Session error:', error.message)
           setSession(null)
           setUser(null)
-        } else {
+        } else if (session) {
           setSession(session)
-          setUser(session?.user ?? null)
-          console.log('✅ Session loaded:', { hasSession: !!session, hasUser: !!session?.user })
+          setUser(session.user)
+          console.log('✅ Session loaded:', { 
+            hasSession: !!session, 
+            hasUser: !!session.user,
+            userEmail: session.user?.email 
+          })
+        } else {
+          console.log('ℹ️ No active session found')
+          setSession(null)
+          setUser(null)
         }
         
       } catch (err) {
         if (isCompleted) return // 既に完了済みの場合は何もしない
-        console.log('ℹ️ Session load failed - continuing as guest user')
+        console.log('ℹ️ Session load failed:', err)
         setSession(null)
         setUser(null)
       } finally {
@@ -73,7 +82,11 @@ export function useSupabaseAuth() {
     // 認証状態変更の監視
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session)
+        console.log('🔐 Auth state changed:', event, {
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          userEmail: session?.user?.email
+        })
         
         if (!isCompleted) {
           isCompleted = true
@@ -86,7 +99,12 @@ export function useSupabaseAuth() {
 
         // ユーザー情報をデータベースに同期
         if (session?.user && event === 'SIGNED_IN') {
+          console.log('🔄 Syncing user to database...')
           await syncUserToDatabase(session.user)
+        }
+        
+        if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out')
         }
       }
     )
