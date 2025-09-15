@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Eye, Hand, Rocket, Plus, Calendar } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Eye, Hand, Rocket, Plus, Calendar, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
+import { CollaboratorSearch } from "@/components/collaborator-search";
 import type { Project } from "@shared/schema";
 
 type ProjectWithStats = Project & {
@@ -19,6 +22,7 @@ type ProjectWithStats = Project & {
 
 export default function MyProjectsPage() {
   const { user } = useAuth();
+  const [selectedProjectForSearch, setSelectedProjectForSearch] = useState<string | null>(null);
   
   const { data: projects = [], isLoading } = useQuery<ProjectWithStats[]>({
     queryKey: ["/api/projects"],
@@ -124,12 +128,40 @@ export default function MyProjectsPage() {
                   </div>
                 </div>
                 
-                <div className="mt-4 pt-4 border-t">
+                <div className="mt-4 pt-4 border-t space-y-2">
                   <Link href={`/projects/${project.id}`}>
                     <Button variant="outline" className="w-full" data-testid={`button-view-project-${project.id}`}>
   プロジェクトを表示
                     </Button>
                   </Link>
+                  
+                  <Dialog 
+                    open={selectedProjectForSearch === project.id}
+                    onOpenChange={(open) => setSelectedProjectForSearch(open ? project.id : null)}
+                  >
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="secondary" 
+                        className="w-full" 
+                        data-testid={`button-find-collaborators-${project.id}`}
+                      >
+                        <Users className="w-4 h-4 mr-2" />
+                        協力者を探す
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>協力者検索 - {project.title}</DialogTitle>
+                        <DialogDescription>
+                          プロジェクトに最適な協力者を見つけましょう
+                        </DialogDescription>
+                      </DialogHeader>
+                      <CollaboratorSearch 
+                        projectId={project.id}
+                        isOwner={true}
+                      />
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardContent>
             </Card>

@@ -18,9 +18,13 @@ import {
   Search,
   MessageSquare,
   Star,
-  Filter
+  Filter,
+  Heart,
+  School,
+  BookOpen
 } from "lucide-react";
 import { projectRequiredSkillsApi, messagesApi } from "@/lib/supabaseApi";
+import { userInterestApi } from "@/lib/userInterestApi";
 
 interface CollaboratorSearchProps {
   projectId: string;
@@ -50,7 +54,9 @@ export function CollaboratorSearch({ projectId, isOwner }: CollaboratorSearchPro
     matchAll: false,
     minOverlap: 1,
     limit: 20,
-    offset: 0
+    offset: 0,
+    university: "",
+    skillFilter: ""
   });
   const [showSearch, setShowSearch] = useState(false);
 
@@ -130,6 +136,24 @@ export function CollaboratorSearch({ projectId, isOwner }: CollaboratorSearchPro
     },
   });
 
+  // 気になるミューテーション
+  const interestMutation = useMutation({
+    mutationFn: (targetUserId: string) => userInterestApi.sendInterest(targetUserId),
+    onSuccess: () => {
+      toast({
+        title: "気になるを送信しました",
+        description: "相手に通知が届きます。",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "エラーが発生しました",
+        description: "気になるの送信に失敗しました。",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAddSkill = () => {
     if (newSkill.trim() && !requiredSkills.some(s => s.skill === newSkill.trim())) {
       addSkillMutation.mutate(newSkill.trim());
@@ -146,6 +170,10 @@ export function CollaboratorSearch({ projectId, isOwner }: CollaboratorSearchPro
       recipientId: candidate.user_id,
       content: message
     });
+  };
+
+  const handleSendInterest = (candidate: Candidate) => {
+    interestMutation.mutate(candidate.user_id);
   };
 
   const handleSearch = () => {
@@ -275,6 +303,38 @@ export function CollaboratorSearch({ projectId, isOwner }: CollaboratorSearchPro
                 </div>
               </div>
 
+              {/* 追加フィルター */}
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs flex items-center gap-1">
+                    <School className="w-3 h-3" />
+                    大学フィルター
+                  </Label>
+                  <Input
+                    placeholder="例: 青山学院大学"
+                    value={searchParams.university}
+                    onChange={(e) =>
+                      setSearchParams(prev => ({ ...prev, university: e.target.value }))
+                    }
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs flex items-center gap-1">
+                    <BookOpen className="w-3 h-3" />
+                    スキルキーワード
+                  </Label>
+                  <Input
+                    placeholder="追加検索キーワード"
+                    value={searchParams.skillFilter}
+                    onChange={(e) =>
+                      setSearchParams(prev => ({ ...prev, skillFilter: e.target.value }))
+                    }
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
               <Button onClick={handleSearch} className="w-full" disabled={candidatesLoading}>
                 <Search className="w-4 h-4 mr-2" />
                 {candidatesLoading ? "検索中..." : "協力者を検索"}
@@ -333,16 +393,27 @@ export function CollaboratorSearch({ projectId, isOwner }: CollaboratorSearchPro
                                 <Star className="w-3 h-3 mr-1" />
                                 {candidate.overlap_percentage}%
                               </Badge>
-                              {isOwner && (
+                              <div className="flex gap-1">
                                 <Button
                                   size="sm"
-                                  onClick={() => handleInvite(candidate)}
-                                  disabled={sendMessageMutation.isPending}
+                                  variant="outline"
+                                  onClick={() => handleSendInterest(candidate)}
+                                  disabled={interestMutation.isPending}
                                 >
-                                  <MessageSquare className="w-4 h-4 mr-1" />
-                                  招待
+                                  <Heart className="w-4 h-4 mr-1" />
+                                  気になる
                                 </Button>
-                              )}
+                                {isOwner && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleInvite(candidate)}
+                                    disabled={sendMessageMutation.isPending}
+                                  >
+                                    <MessageSquare className="w-4 h-4 mr-1" />
+                                    招待
+                                  </Button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </Card>

@@ -93,17 +93,65 @@ export const projectsApi = {
     nextCursor: { lastCreatedAt: string, lastId: string } | null
   }> {
     try {
-      const params = new URLSearchParams();
-      params.append('limit', limit.toString());
-      if (lastCreatedAt) params.append('lastCreatedAt', lastCreatedAt);
-      if (lastId) params.append('lastId', lastId);
+      // Supabaseから直接データを取得
+      let query = supabase
+        .from('projects')
+        .select(`
+          *,
+          creator:users!projects_creator_id_fkey (
+            id,
+            first_name,
+            profile_image_url
+          ),
+          participations (
+            type,
+            user_id
+          )
+        `)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
-      const response = await fetch(`/api/projects/discover?${params}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch projects');
+      // カーソルベースのページネーション
+      if (lastCreatedAt && lastId) {
+        query = query.or(`created_at.lt.${lastCreatedAt},and(created_at.eq.${lastCreatedAt},id.lt.${lastId})`);
       }
 
-      return await response.json();
+      const { data: projects, error } = await query;
+
+      if (error) {
+        console.error('Supabase error in getForDiscover:', error);
+        throw error;
+      }
+
+      // フォーマットを適応
+      const formattedProjects: ProjectWithCreator[] = (projects || []).map(project => ({
+        id: project.id,
+        title: project.title,
+        description: project.description,
+        creatorId: project.creator_id,
+        isActive: project.is_active,
+        createdAt: project.created_at,
+        updatedAt: project.updated_at,
+        creator: {
+          id: project.creator.id,
+          firstName: project.creator.first_name,
+          profileImageUrl: project.creator.profile_image_url,
+        },
+        participations: project.participations || []
+      }));
+
+      const hasMore = formattedProjects.length === limit;
+      const nextCursor = formattedProjects.length > 0 ? {
+        lastCreatedAt: formattedProjects[formattedProjects.length - 1].createdAt || '',
+        lastId: formattedProjects[formattedProjects.length - 1].id
+      } : null;
+
+      return {
+        projects: formattedProjects,
+        hasMore,
+        nextCursor
+      };
     } catch (error) {
       console.error('Error in getForDiscover:', error)
       return {

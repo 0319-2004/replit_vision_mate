@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Send, Search } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MessageCircle, Send, Search, Heart } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { userInterestApi } from "@/lib/userInterestApi";
 
 type ConversationWithMessages = {
   id: string;
@@ -40,6 +42,12 @@ export default function MessagesPage() {
 
   const { data: conversations = [], isLoading } = useQuery<ConversationWithMessages[]>({
     queryKey: ['/api/conversations'],
+  });
+
+  // 受信した気になるを取得
+  const { data: receivedInterests = [], isLoading: interestsLoading } = useQuery({
+    queryKey: ['received-interests'],
+    queryFn: () => userInterestApi.getReceivedInterests(),
   });
 
   const { data: currentConversation, isLoading: conversationLoading } = useQuery<ConversationWithMessages>({
@@ -101,7 +109,20 @@ export default function MessagesPage() {
         <p className="text-muted-foreground">プロジェクトメンバーと直接やり取りができます / Chat directly with project members</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+      <Tabs defaultValue="messages" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="messages" className="flex items-center gap-2">
+            <MessageCircle className="w-4 h-4" />
+            メッセージ
+          </TabsTrigger>
+          <TabsTrigger value="interests" className="flex items-center gap-2">
+            <Heart className="w-4 h-4" />
+            気になる ({receivedInterests.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="messages">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
         {/* Conversations List */}
         <Card className="lg:col-span-1">
           <CardHeader>
@@ -276,7 +297,83 @@ export default function MessagesPage() {
             </div>
           )}
         </Card>
-      </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="interests">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="w-5 h-5" />
+                あなたに気になるを送った人
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[600px]">
+                {interestsLoading ? (
+                  <div className="flex items-center justify-center h-32">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  </div>
+                ) : receivedInterests.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Heart className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p className="mb-2">まだ気になるが届いていません</p>
+                    <p className="text-sm">プロジェクトの協力者検索で見つけてもらいましょう！</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {receivedInterests.map((interest: any) => (
+                      <Card key={interest.id} className="p-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={interest.sender.profile_image_url || interest.sender.avatar_url} />
+                            <AvatarFallback>
+                              {interest.sender.first_name?.[0] || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="font-medium">
+                              {interest.sender.display_name || 
+                               `${interest.sender.first_name || ''} ${interest.sender.last_name || ''}`.trim() || 
+                               'Anonymous User'}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {formatDistanceToNow(new Date(interest.created_at), { addSuffix: true })}に気になるを送信
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                // メッセージタブに切り替え、相手との会話を開く
+                                const conversationWithSender = conversations.find(conv => {
+                                  const partner = getConversationPartner(conv);
+                                  return partner.id === interest.sender.id;
+                                });
+                                
+                                if (conversationWithSender) {
+                                  setSelectedConversation(conversationWithSender.id);
+                                  // タブを切り替え
+                                  const messagesTab = document.querySelector('[value="messages"]') as HTMLElement;
+                                  messagesTab?.click();
+                                }
+                              }}
+                            >
+                              <MessageCircle className="w-4 h-4 mr-1" />
+                              返信
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
