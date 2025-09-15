@@ -333,7 +333,11 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
 // Safe public user type for discover/public endpoints - excludes sensitive data
-export type PublicUser = Pick<User, 'id' | 'firstName' | 'profileImageUrl'>;
+export type PublicUser = {
+  id: string;
+  first_name: string | null;
+  profile_image_url: string | null;
+};
 
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
@@ -385,4 +389,10 @@ export type ConversationWithMessages = Conversation & {
 
 export type MessageWithSender = Message & {
   sender: User;
+};
+
+// ProjectWithCreator type for frontend use
+export type ProjectWithCreator = Project & {
+  creator: PublicUser;
+  participations: Participation[];
 };

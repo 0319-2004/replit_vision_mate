@@ -1,58 +1,19 @@
 import { supabase } from './supabase'
+import type { 
+  Project, 
+  PublicUser, 
+  Participation, 
+  Message,
+  MessageWithSender,
+  ConversationWithMessages,
+  Conversation,
+  User,
+  ProjectLike,
+  UserSkill,
+  ProjectRequiredSkill,
+  ProjectWithCreator
+} from "@shared/schema";
 
-// Types
-export interface Project {
-  id: string
-  title: string
-  description: string
-  creator_id: string
-  is_active: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface ProjectWithCreator extends Project {
-  creator: {
-    id: string
-    first_name: string | null
-    profile_image_url: string | null
-  }
-  participations?: Participation[]
-}
-
-export interface Participation {
-  id: string
-  project_id: string
-  user_id: string
-  type: 'watch' | 'raise_hand' | 'commit'
-  created_at: string
-}
-
-export interface ProgressUpdate {
-  id: string
-  project_id: string
-  user_id: string
-  title: string
-  content: string
-  created_at: string
-}
-
-export interface Comment {
-  id: string
-  project_id: string
-  user_id: string
-  content: string
-  created_at: string
-}
-
-export interface Reaction {
-  id: string
-  target_id: string
-  target_type: 'project' | 'progress_update' | 'comment' | 'message'
-  user_id: string
-  type: string
-  created_at: string
-}
 
 // Project API
 export const projectsApi = {
@@ -88,7 +49,7 @@ export const projectsApi = {
 
   // 発見用プロジェクト取得（ページネーション対応）
   async getForDiscover(limit: number = 12, lastCreatedAt?: string, lastId?: string): Promise<{
-    projects: ProjectWithCreator[],
+    projects: any[],
     hasMore: boolean,
     nextCursor: { lastCreatedAt: string, lastId: string } | null
   }> {
@@ -124,26 +85,26 @@ export const projectsApi = {
         throw error;
       }
 
-      // フォーマットを適応
-      const formattedProjects: ProjectWithCreator[] = (projects || []).map(project => ({
+      // フォーマットを適応  
+      const formattedProjects = (projects || []).map(project => ({
         id: project.id,
         title: project.title,
         description: project.description,
-        creatorId: project.creator_id,
-        isActive: project.is_active,
-        createdAt: project.created_at,
-        updatedAt: project.updated_at,
+        creator_id: project.creator_id,
+        is_active: project.is_active,
+        created_at: project.created_at,
+        updated_at: project.updated_at,
         creator: {
           id: project.creator.id,
-          firstName: project.creator.first_name,
-          profileImageUrl: project.creator.profile_image_url,
+          first_name: project.creator.first_name,
+          profile_image_url: project.creator.profile_image_url,
         },
         participations: project.participations || []
       }));
 
       const hasMore = formattedProjects.length === limit;
       const nextCursor = formattedProjects.length > 0 ? {
-        lastCreatedAt: formattedProjects[formattedProjects.length - 1].createdAt || '',
+        lastCreatedAt: formattedProjects[formattedProjects.length - 1].created_at || '',
         lastId: formattedProjects[formattedProjects.length - 1].id
       } : null;
 
@@ -305,7 +266,7 @@ export const projectsApi = {
   },
 
   // プロジェクト更新
-  async update(id: string, updates: Partial<Pick<Project, 'title' | 'description' | 'is_active'>>) {
+  async update(id: string, updates: any) {
     const { data, error } = await supabase
       .from('projects')
       .update(updates)
