@@ -28,20 +28,38 @@ export default function LandingPage() {
             <h1 className="text-xl font-bold">VisionMates</h1>
           </div>
           <Button 
-            onClick={() => {
-              import('@/hooks/useSupabaseAuth').then(({ useSupabaseAuth }) => {
-                // Googleサインインを実行
-                import('@/lib/supabase').then(({ supabase }) => {
-                  supabase.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: {
-                      redirectTo: window.location.href.includes('localhost') 
-                        ? 'http://localhost:5173/' 
-                        : 'https://0319-2004.github.io/replit_vision_mate/',
+            onClick={async () => {
+              try {
+                console.log('🔐 Starting Google OAuth...');
+                const { supabase } = await import('@/lib/supabase');
+                
+                const redirectUrl = window.location.href.includes('localhost') 
+                  ? 'http://localhost:5173/' 
+                  : 'https://0319-2004.github.io/replit_vision_mate/';
+                
+                console.log('🔗 Redirect URL:', redirectUrl);
+                
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                  provider: 'google',
+                  options: {
+                    redirectTo: redirectUrl,
+                    queryParams: {
+                      access_type: 'offline',
+                      prompt: 'consent',
                     }
-                  });
+                  }
                 });
-              });
+                
+                if (error) {
+                  console.error('❌ OAuth Error:', error);
+                  alert(`認証エラー: ${error.message}`);
+                } else {
+                  console.log('✅ OAuth initiated:', data);
+                }
+              } catch (err) {
+                console.error('❌ Unexpected error:', err);
+                alert(`予期しないエラーが発生しました: ${err}`);
+              }
             }}
             data-testid="button-login"
           >
@@ -76,17 +94,38 @@ export default function LandingPage() {
           </p>
           <Button 
             size="lg" 
-            onClick={() => {
-              import('@/lib/supabase').then(({ supabase }) => {
-                supabase.auth.signInWithOAuth({
+            onClick={async () => {
+              try {
+                console.log('🔐 Starting Google OAuth (Hero)...');
+                const { supabase } = await import('@/lib/supabase');
+                
+                const redirectUrl = window.location.href.includes('localhost') 
+                  ? 'http://localhost:5173/' 
+                  : 'https://0319-2004.github.io/replit_vision_mate/';
+                
+                console.log('🔗 Redirect URL:', redirectUrl);
+                
+                const { data, error } = await supabase.auth.signInWithOAuth({
                   provider: 'google',
                   options: {
-                    redirectTo: window.location.href.includes('localhost') 
-                      ? 'http://localhost:5173/' 
-                      : 'https://0319-2004.github.io/replit_vision_mate/',
+                    redirectTo: redirectUrl,
+                    queryParams: {
+                      access_type: 'offline',
+                      prompt: 'consent',
+                    }
                   }
                 });
-              });
+                
+                if (error) {
+                  console.error('❌ OAuth Error:', error);
+                  alert(`認証エラー: ${error.message}`);
+                } else {
+                  console.log('✅ OAuth initiated:', data);
+                }
+              } catch (err) {
+                console.error('❌ Unexpected error:', err);
+                alert(`予期しないエラーが発生しました: ${err}`);
+              }
             }}
             className="mr-4"
             data-testid="button-hero-signup"
@@ -212,17 +251,38 @@ export default function LandingPage() {
           </p>
           <Button 
             size="lg" 
-            onClick={() => {
-              import('@/lib/supabase').then(({ supabase }) => {
-                supabase.auth.signInWithOAuth({
+            onClick={async () => {
+              try {
+                console.log('🔐 Starting Google OAuth (CTA)...');
+                const { supabase } = await import('@/lib/supabase');
+                
+                const redirectUrl = window.location.href.includes('localhost') 
+                  ? 'http://localhost:5173/' 
+                  : 'https://0319-2004.github.io/replit_vision_mate/';
+                
+                console.log('🔗 Redirect URL:', redirectUrl);
+                
+                const { data, error } = await supabase.auth.signInWithOAuth({
                   provider: 'google',
                   options: {
-                    redirectTo: window.location.href.includes('localhost') 
-                      ? 'http://localhost:5173/' 
-                      : 'https://0319-2004.github.io/replit_vision_mate/',
+                    redirectTo: redirectUrl,
+                    queryParams: {
+                      access_type: 'offline',
+                      prompt: 'consent',
+                    }
                   }
                 });
-              });
+                
+                if (error) {
+                  console.error('❌ OAuth Error:', error);
+                  alert(`認証エラー: ${error.message}`);
+                } else {
+                  console.log('✅ OAuth initiated:', data);
+                }
+              } catch (err) {
+                console.error('❌ Unexpected error:', err);
+                alert(`予期しないエラーが発生しました: ${err}`);
+              }
             }}
             data-testid="button-cta-signup"
           >

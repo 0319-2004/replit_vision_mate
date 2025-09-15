@@ -60,6 +60,24 @@ export default function App() {
     };
     
     handleSPARouting();
+    
+    // OAuth認証後のハッシュ処理
+    const handleAuthCallback = () => {
+      const hash = window.location.hash;
+      if (hash && (hash.includes('access_token') || hash.includes('error'))) {
+        console.log('🔐 OAuth callback detected:', hash);
+        // ハッシュをクエリパラメータに変換してSupabaseが処理できるようにする
+        const params = new URLSearchParams(hash.substring(1));
+        const newUrl = new URL(window.location.href);
+        newUrl.hash = '';
+        params.forEach((value, key) => {
+          newUrl.searchParams.set(key, value);
+        });
+        window.history.replaceState({}, '', newUrl.toString());
+      }
+    };
+    
+    handleAuthCallback();
   }, []);
 
   // デバッグ用ログ

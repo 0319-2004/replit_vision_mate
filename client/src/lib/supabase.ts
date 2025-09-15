@@ -10,7 +10,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    debug: false
+    debug: true  // デバッグモードを有効にしてエラーを確認
   },
   global: {
     headers: {
