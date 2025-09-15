@@ -20,6 +20,7 @@ export const projectsApi = {
   // 全プロジェクト取得
   async getAll(): Promise<Project[]> {
     try {
+      console.log('🔍 Fetching projects from Supabase...');
       const { data, error } = await supabase
         .from('projects')
         .select(`
@@ -37,12 +38,14 @@ export const projectsApi = {
         .order('created_at', { ascending: false })
 
       if (error) {
-        console.error('Error fetching projects:', error)
+        console.error('❌ Supabase error fetching projects:', error)
         throw error
       }
+      
+      console.log('✅ Projects fetched successfully:', data?.length || 0, 'projects');
       return data || []
     } catch (error) {
-      console.error('Error in getAll:', error)
+      console.error('❌ Error in getAll:', error)
       return []
     }
   },

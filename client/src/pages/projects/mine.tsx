@@ -27,9 +27,7 @@ export default function MyProjectsPage() {
   const { data: projects = [], isLoading, error } = useQuery<ProjectWithStats[]>({
     queryKey: ["/api/projects"],
     select: (data: any[]) => {
-      console.log('Projects loading:', isLoading);
-      console.log('Projects data:', data);
-      console.log('Projects error:', error);
+      console.log('Projects data in select:', data);
       console.log('Current user in mine.tsx:', user);
       
       if (!data || !Array.isArray(data)) {
@@ -49,6 +47,11 @@ export default function MyProjectsPage() {
       return userProjects;
     }
   });
+
+  // デバッグ用ログ（select関数の外で実行）
+  console.log('Projects loading:', isLoading);
+  console.log('Projects data:', projects);
+  console.log('Projects error:', error);
 
   if (isLoading) {
     return (
