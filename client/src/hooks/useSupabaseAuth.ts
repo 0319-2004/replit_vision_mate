@@ -20,7 +20,7 @@ export function useSupabaseAuth() {
     let timeoutId: NodeJS.Timeout
     let isCompleted = false
 
-    // 強制的にローディングを終了（5秒後）
+    // 強制的にローディングを終了（10秒後）
     const forceLoadingComplete = () => {
       if (!isCompleted) {
         console.log('⏰ Session loading timeout - continuing as guest user')
@@ -31,8 +31,8 @@ export function useSupabaseAuth() {
       }
     }
 
-    // 安全装置：15秒後に強制終了（GitHub Pagesでは応答が遅い場合がある）
-    timeoutId = setTimeout(forceLoadingComplete, 15000)
+    // 安全装置：10秒後に強制終了（GitHub Pagesでは応答が遅い場合がある）
+    timeoutId = setTimeout(forceLoadingComplete, 10000)
 
     // 初期セッション取得
     const getInitialSession = async () => {
@@ -46,6 +46,7 @@ export function useSupabaseAuth() {
         
         if (error) {
           console.log('ℹ️ Session error:', error.message)
+          console.log('ℹ️ Error details:', error)
           setSession(null)
           setUser(null)
         } else if (session) {
@@ -54,7 +55,8 @@ export function useSupabaseAuth() {
           console.log('✅ Session loaded:', { 
             hasSession: !!session, 
             hasUser: !!session.user,
-            userEmail: session.user?.email 
+            userEmail: session.user?.email,
+            sessionExpires: session.expires_at
           })
         } else {
           console.log('ℹ️ No active session found')

@@ -38,6 +38,7 @@ export default function LandingPage() {
                   : 'https://0319-2004.github.io/replit_vision_mate/';
                 
                 console.log('🔗 Redirect URL:', redirectUrl);
+                console.log('🔗 Current URL:', window.location.href);
                 
                 const { data, error } = await supabase.auth.signInWithOAuth({
                   provider: 'google',
@@ -46,15 +47,22 @@ export default function LandingPage() {
                     queryParams: {
                       access_type: 'offline',
                       prompt: 'consent',
-                    }
+                    },
+                    skipBrowserRedirect: false
                   }
                 });
                 
                 if (error) {
                   console.error('❌ OAuth Error:', error);
+                  console.error('❌ Error details:', {
+                    message: error.message,
+                    status: error.status,
+                    statusText: error.statusText
+                  });
                   alert(`認証エラー: ${error.message}`);
                 } else {
                   console.log('✅ OAuth initiated:', data);
+                  console.log('✅ OAuth URL:', data?.url);
                 }
               } catch (err) {
                 console.error('❌ Unexpected error:', err);

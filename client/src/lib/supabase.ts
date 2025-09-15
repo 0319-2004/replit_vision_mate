@@ -11,7 +11,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: true,
     debug: true,  // デバッグモードを有効にしてエラーを確認
-    flowType: 'pkce'  // PKCEフローを使用してセキュリティを向上
+    flowType: 'pkce',  // PKCEフローを使用してセキュリティを向上
+    storageKey: 'visionmates-auth-token',
+    storageSync: true
   },
   global: {
     headers: {

@@ -67,8 +67,12 @@ export default function App() {
     // OAuth認証後のハッシュ処理
     const handleAuthCallback = () => {
       const hash = window.location.hash;
+      const search = window.location.search;
+      
+      console.log('🔐 Checking for auth callback:', { hash, search });
+      
       if (hash && (hash.includes('access_token') || hash.includes('error'))) {
-        console.log('🔐 OAuth callback detected:', hash);
+        console.log('🔐 OAuth callback detected in hash:', hash);
         // ハッシュをクエリパラメータに変換してSupabaseが処理できるようにする
         const params = new URLSearchParams(hash.substring(1));
         const newUrl = new URL(window.location.href);
@@ -77,6 +81,9 @@ export default function App() {
           newUrl.searchParams.set(key, value);
         });
         window.history.replaceState({}, '', newUrl.toString());
+        console.log('🔐 Converted hash to query params:', newUrl.toString());
+      } else if (search && (search.includes('access_token') || search.includes('error'))) {
+        console.log('🔐 OAuth callback detected in search params:', search);
       }
     };
     
