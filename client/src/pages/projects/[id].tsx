@@ -437,9 +437,9 @@ export default function ProjectDetailPage() {
   const hasAnyParticipation = !!userParticipation;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-0 py-4 md:py-6">
       {/* 一時的なデバッグ情報 */}
-      <div className="mb-4 p-4 bg-gray-100 rounded text-xs">
+      <div className="mb-4 md:mb-6 p-4 bg-muted rounded text-xs mx-4">
         <p><strong>Debug Info:</strong></p>
         <p>Project ID: {projectId}</p>
         <p>Project loaded: {project ? 'Yes' : 'No'}</p>
@@ -448,7 +448,7 @@ export default function ProjectDetailPage() {
         <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
       </div>
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-3 mb-4 md:mb-6 px-4">
         <Button 
           variant="ghost" 
           size="icon"
@@ -458,8 +458,8 @@ export default function ProjectDetailPage() {
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div className="flex-1">
-          <div className="flex items-start justify-between mb-4">
-            <h1 className="text-3xl font-bold">{project.title}</h1>
+          <div className="flex items-start justify-between mb-3 md:mb-4">
+            <h1 className="text-xl md:text-2xl font-semibold">{project.title}</h1>
             <HeroClapButton 
               targetId={project.id}
               targetType="project"
@@ -467,7 +467,7 @@ export default function ProjectDetailPage() {
               initialUserReacted={false}
             />
           </div>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-4 text-xs md:text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Avatar className="h-6 w-6">
                 <AvatarImage src={project.creator.profileImageUrl || undefined} />
@@ -516,7 +516,7 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-4 md:gap-8 px-4">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Description */}

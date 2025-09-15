@@ -2,16 +2,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function SettingsPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">設定</h1>
-          <p className="text-muted-foreground mt-2">
+    <div className="max-w-4xl mx-auto px-0 py-4 md:py-6">
+      <div className="px-4">
+        <div className="mb-4 md:mb-6">
+          <h1 className="text-xl md:text-2xl font-semibold">設定</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             アカウントとアプリケーションの設定を管理します
           </p>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-4 md:gap-6">
           {/* アカウント設定 */}
           <Card>
             <CardHeader>

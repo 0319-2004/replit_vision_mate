@@ -103,14 +103,14 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">メッセージ / Messages</h1>
-        <p className="text-muted-foreground">プロジェクトメンバーと直接やり取りができます / Chat directly with project members</p>
+    <div className="px-0 md:px-0 py-4 md:py-6 max-w-7xl mx-auto">
+      <div className="mb-4 md:mb-6 px-4">
+        <h1 className="text-xl md:text-2xl font-semibold mb-1">メッセージ / Messages</h1>
+        <p className="text-sm text-muted-foreground">プロジェクトメンバーと直接やり取りができます / Chat directly with project members</p>
       </div>
 
       <Tabs defaultValue="messages" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
+        <TabsList className="grid w-full grid-cols-2 mb-4 md:mb-6">
           <TabsTrigger value="messages" className="flex items-center gap-2">
             <MessageCircle className="w-4 h-4" />
             メッセージ
@@ -122,7 +122,7 @@ export default function MessagesPage() {
         </TabsList>
 
         <TabsContent value="messages">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 h-[600px] px-4">
         {/* Conversations List */}
         <Card className="lg:col-span-1">
           <CardHeader>
@@ -309,7 +309,7 @@ export default function MessagesPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[600px]">
+              <ScrollArea className="h-[600px] px-4">
                 {interestsLoading ? (
                   <div className="flex items-center justify-center h-32">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>

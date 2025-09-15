@@ -66,9 +66,9 @@ export default function ProfilePage() {
   const joinedDate = new Date(profileData.created_at || profileData.createdAt);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="flex justify-between items-start mb-8">
-        <h1 className="text-3xl font-bold">マイプロフィール / My Profile</h1>
+    <div className="max-w-4xl mx-auto px-0 py-4 md:py-6">
+      <div className="flex justify-between items-start mb-4 md:mb-6 px-4">
+        <h1 className="text-xl md:text-2xl font-semibold">マイプロフィール / My Profile</h1>
         <Link href="/profile/edit">
           <Button data-testid="button-edit-profile">
             <Edit className="w-4 h-4 mr-2" />
@@ -77,7 +77,7 @@ export default function ProfilePage() {
         </Link>
       </div>
 
-      <Card className="mb-8">
+      <Card className="mb-6 md:mb-8">
         <CardHeader>
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
             <Avatar className="w-24 h-24">
@@ -88,7 +88,7 @@ export default function ProfilePage() {
             </Avatar>
             
             <div className="flex-1">
-              <CardTitle className="text-2xl mb-2">
+              <CardTitle className="text-xl md:text-2xl mb-2">
                 {displayName || '名前未設定 / Name not set'}
               </CardTitle>
               
@@ -173,7 +173,7 @@ export default function ProfilePage() {
       </Card>
 
       {/* Profile Stats (Future enhancement) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">

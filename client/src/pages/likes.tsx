@@ -71,20 +71,20 @@ export default function LikesPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-0 py-4 md:py-6">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-3 mb-4 md:mb-6 px-4">
         <Link href="/discover">
           <Button variant="ghost" size="icon" data-testid="button-back">
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
+          <h1 className="text-xl md:text-2xl font-semibold flex items-center gap-2">
             <Heart className="w-6 h-6 text-red-500" />
             いいねしたプロジェクト
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs md:text-sm text-muted-foreground">
             {likes.length} 件のプロジェクト
           </p>
         </div>
@@ -92,7 +92,7 @@ export default function LikesPage() {
 
       {likes.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center">
+          <CardContent className="py-10 md:py-12 text-center">
             <Heart className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-semibold mb-2">いいねしたプロジェクトがありません</h3>
             <p className="text-muted-foreground mb-4">
@@ -106,11 +106,11 @@ export default function LikesPage() {
       ) : (
         <>
           {/* Projects Grid */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:gap-6 md:grid-cols-2">
             {likes.map((like: any) => {
               const project = like.project;
               return (
-                <Card key={project.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={project.id} className="overflow-hidden hover-elevate">
                   <CardHeader>
                     <div className="flex items-center gap-3 mb-3">
                       <Avatar className="w-10 h-10">
@@ -129,7 +129,7 @@ export default function LikesPage() {
                         </div>
                       </div>
                     </div>
-                    <CardTitle className="text-lg leading-tight">
+                    <CardTitle className="text-base md:text-lg leading-tight">
                       {project.title}
                     </CardTitle>
                   </CardHeader>

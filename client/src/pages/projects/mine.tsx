@@ -65,11 +65,11 @@ export default function MyProjectsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="px-0 md:px-0 py-4 md:py-6">
+      <div className="flex justify-between items-center mb-4 md:mb-6 px-4">
         <div>
-          <h1 className="text-3xl font-bold">マイプロジェクト</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-xl md:text-2xl font-semibold">マイプロジェクト</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             あなたのビジョンを現実に変えるために作成したプロジェクト
           </p>
         </div>
@@ -82,8 +82,8 @@ export default function MyProjectsPage() {
       </div>
 
       {projects.length === 0 ? (
-        <Card className="text-center py-12">
-          <CardContent>
+        <Card className="text-center">
+          <CardContent className="py-8 md:py-12">
             <div className="max-w-md mx-auto">
               <h3 className="text-lg font-medium mb-2">まだプロジェクトがありません</h3>
               <p className="text-muted-foreground mb-6">
@@ -99,7 +99,7 @@ export default function MyProjectsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:gap-6 md:grid-cols-2">
           {projects.map((project) => (
             <Card key={project.id} className="hover-elevate">
               <CardHeader>
@@ -149,7 +149,7 @@ export default function MyProjectsPage() {
                   </div>
                 </div>
                 
-                <div className="mt-4 pt-4 border-t space-y-2">
+                <div className="mt-3 pt-3 border-t space-y-2">
                   <Link href={`/projects/${project.id}`}>
                     <Button variant="outline" className="w-full" data-testid={`button-view-project-${project.id}`}>
   プロジェクトを表示

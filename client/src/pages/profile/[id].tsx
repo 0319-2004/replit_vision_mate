@@ -59,8 +59,8 @@ export default function PublicProfilePage() {
   const joinedDate = new Date(profile.createdAt);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Card className="mb-8">
+    <div className="max-w-4xl mx-auto px-0 py-4 md:py-6">
+      <Card className="mb-6 md:mb-8">
         <CardHeader>
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
             <Avatar className="w-24 h-24">
@@ -71,7 +71,7 @@ export default function PublicProfilePage() {
             </Avatar>
             
             <div className="flex-1">
-              <CardTitle className="text-2xl mb-2">
+              <CardTitle className="text-xl md:text-2xl mb-2">
                 {displayName || '名前未設定 / Name not set'}
               </CardTitle>
               

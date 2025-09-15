@@ -138,16 +138,16 @@ export default function ProfileEditPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="mb-6">
+    <div className="max-w-2xl mx-auto px-0 py-4 md:py-6">
+      <div className="mb-4 md:mb-6 px-4">
         <Link href="/profile">
           <Button variant="ghost" size="sm" className="mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Profile
           </Button>
         </Link>
-        <h1 className="text-3xl font-bold">プロフィール編集 / Edit Profile</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-xl md:text-2xl font-semibold">プロフィール編集 / Edit Profile</h1>
+        <p className="text-sm text-muted-foreground mt-1">
           あなたのプロフィール情報を更新してください / Update your profile information
         </p>
       </div>
