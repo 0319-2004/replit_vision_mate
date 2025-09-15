@@ -2,7 +2,7 @@ import { Switch, Route, Router } from "wouter";
 import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { useAuth } from "./hooks/useSupabaseAuth";
+import { useSupabaseAuth } from "./hooks/useSupabaseAuth";
 
 // Pages
 import LandingPage from "./pages/landing";
@@ -43,7 +43,7 @@ function AuthenticatedApp() {
 }
 
 export default function App() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading } = useSupabaseAuth();
 
   if (isLoading) {
     return (
