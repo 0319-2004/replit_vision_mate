@@ -31,8 +31,8 @@ export function useSupabaseAuth() {
       }
     }
 
-    // 安全装置：5秒後に強制終了
-    timeoutId = setTimeout(forceLoadingComplete, 5000)
+    // 安全装置：10秒後に強制終了（GitHub Pagesでは応答が遅い場合がある）
+    timeoutId = setTimeout(forceLoadingComplete, 10000)
 
     // 初期セッション取得
     const getInitialSession = async () => {

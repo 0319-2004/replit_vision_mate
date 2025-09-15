@@ -24,11 +24,29 @@ export default function MyProjectsPage() {
   const { user } = useAuth();
   const [selectedProjectForSearch, setSelectedProjectForSearch] = useState<string | null>(null);
   
-  const { data: projects = [], isLoading } = useQuery<ProjectWithStats[]>({
+  const { data: projects = [], isLoading, error } = useQuery<ProjectWithStats[]>({
     queryKey: ["/api/projects"],
     select: (data: any[]) => {
-      // Filter to only show user's own projects
-      return data.filter(project => project.creatorId === (user as any)?.id);
+      console.log('Projects loading:', isLoading);
+      console.log('Projects data:', data);
+      console.log('Projects error:', error);
+      console.log('Current user in mine.tsx:', user);
+      
+      if (!data || !Array.isArray(data)) {
+        console.log('No valid data array found');
+        return [];
+      }
+      
+      // Filter to only show user's own projects (try both creatorId and creator_id)
+      const userProjects = data.filter(project => {
+        const projectCreatorId = project.creatorId || project.creator_id;
+        const currentUserId = (user as any)?.id;
+        console.log('Comparing project creator:', projectCreatorId, 'with user:', currentUserId);
+        return projectCreatorId === currentUserId;
+      });
+      
+      console.log('Filtered user projects:', userProjects);
+      return userProjects;
     }
   });
 

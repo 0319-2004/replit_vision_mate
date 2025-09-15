@@ -45,6 +45,27 @@ function AuthenticatedApp() {
 export default function App() {
   const { user, isLoading } = useSupabaseAuth();
 
+  // GitHub Pages SPA routing support
+  useEffect(() => {
+    const handleSPARouting = () => {
+      const l = window.location;
+      if (l.search[1] === '/') {
+        const decoded = l.search.slice(1).split('&').map(function(s) { 
+          return s.replace(/~and~/g, '&')
+        }).join('?');
+        window.history.replaceState(null, null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+        );
+      }
+    };
+    
+    handleSPARouting();
+  }, []);
+
+  // デバッグ用ログ
+  console.log('Current user:', user);
+  console.log('Is user logged in:', !!user);
+  
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -56,9 +77,12 @@ export default function App() {
     );
   }
 
+  // ベースパスの決定
+  const basePath = import.meta.env.PROD ? '/replit_vision_mate' : '';
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Router base={window.location.pathname.includes('/replit_vision_mate') ? '/replit_vision_mate' : ''}>
+      <Router base={basePath}>
         {user ? <AuthenticatedApp /> : <LandingPage />}
       </Router>
     </QueryClientProvider>
