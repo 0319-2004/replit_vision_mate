@@ -1,59 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf-8">
-    <title>VisionMates - リダイレクト中...</title>
-    <meta http-equiv="refresh" content="0; url=/replit_vision_mate/">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>VisionMates - アイデアをアクションに</title>
+    <meta name="description" content="VisionMatesは、あなたのビジョンを形にするためのチームを見つけ、進捗を共有し、一緒に行動を起こせるプラットフォームです。" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>" />
+    
+    <!-- GitHub Pages SPA Routing Support -->
     <script type="text/javascript">
-      (function() {
+      (function(l) {
         try {
-          var l = window.location;
           var base = '/replit_vision_mate';
-          
-          console.log('404.html triggered:', l.href);
-          
-          // OAuth callback detection - force redirect to base with hash
-          if (l.hash && (l.hash.includes('access_token') || l.hash.includes('error'))) {
-            console.log('OAuth callback detected, redirecting to base with hash');
-            var targetUrl = l.protocol + '//' + l.hostname + base + '/' + l.hash;
-            console.log('Redirecting to:', targetUrl);
-            l.replace(targetUrl);
+          // OAuth callback sometimes lands on root domain. Force to base.
+          if (l.pathname === '/' && l.hash && l.hash.indexOf('access_token') !== -1) {
+            l.replace(l.protocol + '//' + l.host + base + '/' + l.hash);
             return;
           }
-          
-          // Any other 404 on root domain - go to base
-          if (l.pathname === '/' || l.pathname === '') {
-            console.log('Root 404, redirecting to base');
-            l.replace(l.protocol + '//' + l.hostname + base + '/');
-            return;
+          // Netlify-style redirect param handler kept for safety
+          if (l.search[1] === '/') {
+            var decoded = l.search.slice(1).split('&').map(function(s) { 
+              return s.replace(/~and~/g, '&')
+            }).join('?');
+            window.history.replaceState(null, null,
+                l.pathname.slice(0, -1) + decoded + l.hash
+            );
           }
-          
-          // Standard SPA routing for paths under /replit_vision_mate/
-          if (l.pathname.indexOf(base) === 0) {
-            var redirect = l.search.slice(1);
-            if (redirect) {
-              var decoded = redirect.split('&').map(function(s) { 
-                return s.replace(/~and~/g, '&')
-              }).join('?');
-              window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
-              return;
-            }
-          }
-          
-          // Fallback - always go to base
-          l.replace(l.protocol + '//' + l.hostname + base + '/');
-        } catch (e) {
-          console.error('404.html error:', e);
-          // Final fallback
-          window.location.replace('/replit_vision_mate/');
-        }
-      })();
+        } catch (e) {}
+      }(window.location))
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fira+Code:wght@300..700&family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,9..40,100..1000&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Oxanium:wght@200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,200..900&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/replit_vision_mate/assets/index-5fNem3yl.js"></script>
+    <link rel="modulepreload" crossorigin href="/replit_vision_mate/assets/vendor-Dp9Vuofq.js">
+    <link rel="modulepreload" crossorigin href="/replit_vision_mate/assets/ui-D_X3-S7n.js">
+    <link rel="modulepreload" crossorigin href="/replit_vision_mate/assets/supabase-BVyxSqSb.js">
+    <link rel="stylesheet" crossorigin href="/replit_vision_mate/assets/index-ha5nLxYG.css">
   </head>
   <body>
-    <div style="text-align: center; margin-top: 50px;">
-      <h3>VisionMates にリダイレクト中...</h3>
-      <p>自動的にリダイレクトされない場合は、<a href="/replit_vision_mate/">こちら</a>をクリックしてください。</p>
-    </div>
+    <div id="root"></div>
+    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
+    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>
 </html>
