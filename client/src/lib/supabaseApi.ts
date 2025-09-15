@@ -21,6 +21,29 @@ export const projectsApi = {
   async getAll(): Promise<Project[]> {
     try {
       console.log('🔍 Fetching projects from Supabase...');
+      console.log('🔗 Supabase URL:', supabase.supabaseUrl);
+      console.log('🔑 Supabase Key:', supabase.supabaseKey ? 'Present' : 'Missing');
+      
+      // まず基本的な接続テスト
+      const { data: testData, error: testError } = await supabase
+        .from('projects')
+        .select('count')
+        .limit(1);
+      
+      if (testError) {
+        console.error('❌ Supabase connection test failed:', testError);
+        console.error('❌ Error details:', {
+          message: testError.message,
+          details: testError.details,
+          hint: testError.hint,
+          code: testError.code
+        });
+        throw testError;
+      }
+      
+      console.log('✅ Supabase connection test passed');
+      
+      // プロジェクトデータを取得
       const { data, error } = await supabase
         .from('projects')
         .select(`
@@ -39,13 +62,21 @@ export const projectsApi = {
 
       if (error) {
         console.error('❌ Supabase error fetching projects:', error)
+        console.error('❌ Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw error
       }
       
       console.log('✅ Projects fetched successfully:', data?.length || 0, 'projects');
+      console.log('📊 Sample project data:', data?.[0] || 'No projects found');
       return data || []
     } catch (error) {
       console.error('❌ Error in getAll:', error)
+      console.error('❌ Full error object:', error);
       return []
     }
   },

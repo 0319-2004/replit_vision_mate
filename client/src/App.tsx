@@ -9,6 +9,7 @@ import LandingPage from "./pages/landing";
 import HomePage from "./pages/home";
 import DiscoverPage from "./pages/discover";
 import MyProjectsPage from "./pages/projects/mine";
+import DebugPage from "./pages/debug";
 
 // App with authentication
 function AuthenticatedApp() {
@@ -21,6 +22,7 @@ function AuthenticatedApp() {
             <a href="/" className="text-gray-700 hover:text-blue-600">ホーム</a>
             <a href="/discover" className="text-gray-700 hover:text-blue-600">発見</a>
             <a href="/projects/mine" className="text-gray-700 hover:text-blue-600">マイプロジェクト</a>
+            <a href="/debug" className="text-gray-700 hover:text-blue-600">デバッグ</a>
           </div>
         </nav>
         
@@ -29,6 +31,7 @@ function AuthenticatedApp() {
             <Route path="/" component={HomePage} />
             <Route path="/discover" component={DiscoverPage} />
             <Route path="/projects/mine" component={MyProjectsPage} />
+            <Route path="/debug" component={DebugPage} />
             <Route path="*">
               <div className="text-center py-12">
                 <h2 className="text-2xl font-bold mb-4">ページが見つかりません</h2>

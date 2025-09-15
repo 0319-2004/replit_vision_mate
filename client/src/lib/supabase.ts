@@ -17,8 +17,42 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     headers: {
       'X-Client-Info': 'visionmates-web'
     }
+  },
+  db: {
+    schema: 'public'
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
   }
 })
+
+// Supabase接続テスト関数
+export const testSupabaseConnection = async () => {
+  try {
+    console.log('🔍 Testing Supabase connection...');
+    console.log('🔗 URL:', supabaseUrl);
+    console.log('🔑 Key present:', !!supabaseAnonKey);
+    
+    // 基本的な接続テスト
+    const { data, error } = await supabase
+      .from('projects')
+      .select('count')
+      .limit(1);
+    
+    if (error) {
+      console.error('❌ Connection test failed:', error);
+      return { success: false, error };
+    }
+    
+    console.log('✅ Connection test successful');
+    return { success: true, data };
+  } catch (err) {
+    console.error('❌ Connection test error:', err);
+    return { success: false, error: err };
+  }
+};
 
 // 型定義
 export interface Database {
