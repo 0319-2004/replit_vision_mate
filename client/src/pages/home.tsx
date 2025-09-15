@@ -34,18 +34,18 @@ export default function HomePage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="px-0 md:px-0 py-0 md:py-0">
       {/* Welcome Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-4 md:mb-6 px-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">
+          <h1 className="text-xl md:text-2xl font-semibold mb-1">
 おかえりなさい、{(user as User)?.firstName || 'ビジョナリー'}さん！👋
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
 新しいプロジェクトを発見したり、あなたのビジョンをコミュニティと共有しましょう。
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 px-1">
           <Link href="/discover">
             <Button variant="outline" data-testid="button-discover">
               <Users className="w-4 h-4 mr-2" />
@@ -62,9 +62,9 @@ export default function HomePage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6 px-4">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-4">
             <div className="flex items-center">
               <Rocket className="w-5 h-5 text-primary mr-2" />
               <div>
@@ -75,7 +75,7 @@ export default function HomePage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-4">
             <div className="flex items-center">
               <Eye className="w-5 h-5 text-blue-500 mr-2" />
               <div>
@@ -86,7 +86,7 @@ export default function HomePage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-4">
             <div className="flex items-center">
               <Hand className="w-5 h-5 text-yellow-500 mr-2" />
               <div>
@@ -97,7 +97,7 @@ export default function HomePage() {
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-4">
             <div className="flex items-center">
               <Rocket className="w-5 h-5 text-green-500 mr-2" />
               <div>
@@ -111,8 +111,8 @@ export default function HomePage() {
 
       {/* Recent Projects */}
       <section>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-semibold">最近のプロジェクト</h2>
+        <div className="flex justify-between items-center mb-4 md:mb-6 px-4">
+          <h2 className="text-lg md:text-xl font-semibold">最近のプロジェクト</h2>
           <Link href="/projects">
             <Button variant="ghost" data-testid="button-view-all-projects">
 すべて表示
@@ -122,7 +122,7 @@ export default function HomePage() {
 
         {projects.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center">
+            <CardContent className="py-8 md:py-12 text-center">
               <Rocket className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">まだプロジェクトがありません</h3>
               <p className="text-muted-foreground mb-4">
@@ -137,13 +137,13 @@ export default function HomePage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6">
+          <div className="grid gap-4 md:gap-6 px-0 md:px-0">
             {projects.slice(0, 6).map((project: Project) => (
               <Card key={project.id} className="hover-elevate">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <CardTitle className="text-lg mb-2">
+                      <CardTitle className="text-base md:text-lg mb-2">
                         <Link href={`/projects/${project.id}`} className="hover:text-primary">
                           {project.title}
                         </Link>

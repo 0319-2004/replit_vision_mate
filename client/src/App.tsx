@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useSupabaseAuth } from "./hooks/useSupabaseAuth";
+import LinkedInShell from "@/components/linkedin-shell";
 
 // Pages
 import LandingPage from "./pages/landing";
@@ -14,34 +15,20 @@ import DebugPage from "./pages/debug";
 // App with authentication
 function AuthenticatedApp() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4">
-        <nav className="flex items-center justify-between py-4 border-b">
-          <h1 className="text-2xl font-bold text-blue-600">VisionMates</h1>
-          <div className="flex gap-4">
-            <a href="/" className="text-gray-700 hover:text-blue-600">ホーム</a>
-            <a href="/discover" className="text-gray-700 hover:text-blue-600">発見</a>
-            <a href="/projects/mine" className="text-gray-700 hover:text-blue-600">マイプロジェクト</a>
-            <a href="/debug" className="text-gray-700 hover:text-blue-600">デバッグ</a>
+    <LinkedInShell>
+      <Switch>
+        <Route path="/" component={HomePage} />
+        <Route path="/discover" component={DiscoverPage} />
+        <Route path="/projects/mine" component={MyProjectsPage} />
+        <Route path="/debug" component={DebugPage} />
+        <Route path="*">
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-bold mb-4">ページが見つかりません</h2>
+            <a href="/" className="text-blue-600 hover:underline">ホームに戻る</a>
           </div>
-        </nav>
-        
-        <main className="py-8">
-          <Switch>
-            <Route path="/" component={HomePage} />
-            <Route path="/discover" component={DiscoverPage} />
-            <Route path="/projects/mine" component={MyProjectsPage} />
-            <Route path="/debug" component={DebugPage} />
-            <Route path="*">
-              <div className="text-center py-12">
-                <h2 className="text-2xl font-bold mb-4">ページが見つかりません</h2>
-                <a href="/" className="text-blue-600 hover:underline">ホームに戻る</a>
-              </div>
-            </Route>
-          </Switch>
-        </main>
-      </div>
-    </div>
+        </Route>
+      </Switch>
+    </LinkedInShell>
   );
 }
 

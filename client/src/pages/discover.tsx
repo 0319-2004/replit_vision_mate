@@ -172,7 +172,7 @@ export default function DiscoverPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-[50vh]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">素晴らしいプロジェクトを探しています...</p>
@@ -183,9 +183,9 @@ export default function DiscoverPage() {
 
   if (!allProjects.length && !isLoading) {
     return (
-      <div className="max-w-md mx-auto px-4 py-8">
+      <div className="max-w-md mx-auto px-0 py-6">
         <Card>
-          <CardContent className="py-12 text-center">
+          <CardContent className="py-10 text-center">
             <h3 className="text-lg font-semibold mb-2">発見するプロジェクトがありません</h3>
             <p className="text-muted-foreground mb-4">
 あなたのビジョンをコミュニティと共有してみませんか！
@@ -206,17 +206,17 @@ export default function DiscoverPage() {
   const participationCounts = getParticipationCounts(currentProject.participations);
 
   return (
-    <div className="max-w-md mx-auto px-4 py-8 min-h-screen flex flex-col">
+    <div className="max-w-md mx-auto px-0 py-4 md:py-6 flex flex-col">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-3 mb-4 md:mb-6">
         <Link href="/">
           <Button variant="ghost" size="icon" data-testid="button-back">
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>
         <div className="flex-1 text-center">
-          <h1 className="text-2xl font-bold">発見</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-xl md:text-2xl font-semibold">発見</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">
             {currentIndex + 1} of {allProjects.length}{nextCursor ? '+' : ''}
             {loadingMore && ' (読み込み中...)'}
           </p>
@@ -238,7 +238,7 @@ export default function DiscoverPage() {
           className="w-full max-w-sm cursor-grab active:cursor-grabbing"
           data-testid="project-card"
         >
-          <Card className="w-full min-h-[400px] shadow-lg">
+          <Card className="w-full min-h-[380px] shadow">
             <CardHeader>
               <div className="flex items-center gap-3 mb-3">
                 <Avatar>
@@ -263,7 +263,7 @@ export default function DiscoverPage() {
                   </div>
                 </div>
               </div>
-              <CardTitle className="text-xl">{currentProject.title}</CardTitle>
+              <CardTitle className="text-lg md:text-xl">{currentProject.title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <CardDescription className="text-base leading-relaxed">
@@ -271,7 +271,7 @@ export default function DiscoverPage() {
               </CardDescription>
               
               {/* Participation Stats */}
-              <div className="flex gap-4 pt-4 border-t">
+              <div className="flex gap-4 pt-3 border-t text-sm text-muted-foreground">
                 <div className="flex items-center gap-1 text-sm">
                   <Eye className="w-4 h-4 text-blue-500" />
                   <span>{participationCounts.watch}</span>
@@ -291,7 +291,7 @@ export default function DiscoverPage() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-center gap-4 mt-6">
+      <div className="flex justify-center gap-4 mt-4 md:mt-6">
         <Button
           variant="outline"
           size="icon"
@@ -326,7 +326,7 @@ export default function DiscoverPage() {
       </div>
 
       {/* Swipe Instructions */}
-      <div className="text-center mt-6 text-sm text-muted-foreground">
+      <div className="text-center mt-4 md:mt-6 text-xs md:text-sm text-muted-foreground">
         <p>左にスワイプでスキップ • ❤️タップで表示 • 右にスワイプで続ける</p>
       </div>
     </div>
