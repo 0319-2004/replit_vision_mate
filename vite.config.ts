@@ -4,7 +4,8 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? '/replit_vision_mate/' : '/',
+  // 相対パスでビルドし、どの配下（任意の repo 名）でも動くようにする
+  base: process.env.NODE_ENV === 'production' ? './' : '/',
   plugins: [
     react(),
     // Replit用のプラグインは本番環境では無効化

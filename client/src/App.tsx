@@ -1,4 +1,5 @@
-import { Switch, Route, Router } from "wouter";
+import { Switch, Route, Router, Link } from "wouter";
+import { useHashLocation } from "wouter/use-hash-location";
 import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -24,7 +25,7 @@ function AuthenticatedApp() {
         <Route path="*">
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold mb-4">ページが見つかりません</h2>
-            <a href="/" className="text-blue-600 hover:underline">ホームに戻る</a>
+            <Link href="/" className="text-blue-600 hover:underline">ホームに戻る</Link>
           </div>
         </Route>
       </Switch>
@@ -92,12 +93,9 @@ export default function App() {
     );
   }
 
-  // ベースパスの決定
-  const basePath = import.meta.env.PROD ? '/replit_vision_mate' : '';
-
   return (
     <QueryClientProvider client={queryClient}>
-      <Router base={basePath}>
+      <Router hook={useHashLocation}>
         {user ? <AuthenticatedApp /> : <LandingPage />}
       </Router>
     </QueryClientProvider>

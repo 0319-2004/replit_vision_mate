@@ -21,8 +21,6 @@ export const projectsApi = {
   async getAll(): Promise<Project[]> {
     try {
       console.log('🔍 Fetching projects from Supabase...');
-      console.log('🔗 Supabase URL:', supabase.supabaseUrl);
-      console.log('🔑 Supabase Key:', supabase.supabaseKey ? 'Present' : 'Missing');
       
       // まず基本的な接続テスト
       const { data: testData, error: testError } = await supabase
