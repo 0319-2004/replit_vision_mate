@@ -39,6 +39,25 @@ export function useSupabaseAuth() {
       console.log('🔄 Getting initial session...')
       
       try {
+        // OAuth(PKCE) リダイレクト後の code を明示的にセッションへ交換
+        if (typeof window !== 'undefined' && window.location.search.includes('code=')) {
+          try {
+            console.log('🔁 Exchanging code for session...')
+            const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.search)
+            if (error) {
+              console.error('❌ exchangeCodeForSession error:', error)
+            } else {
+              console.log('✅ Code exchanged. Has session:', !!data.session)
+              // URLをクリーンアップ
+              const cleaned = new URL(window.location.href)
+              cleaned.search = ''
+              window.history.replaceState({}, document.title, cleaned.toString())
+            }
+          } catch (ex) {
+            console.warn('⚠️ exchangeCodeForSession threw:', ex)
+          }
+        }
+        
         // まず現在のセッションを確認
         const { data: { session }, error } = await supabase.auth.getSession()
         
