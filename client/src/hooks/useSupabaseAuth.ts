@@ -99,8 +99,23 @@ export function useSupabaseAuth() {
         setUser(session?.user ?? null)
         setIsLoading(false)
 
-        // ユーザー情報をデータベースに同期
+        // ドメイン制限（クライアント側）: 青学メールのみ許可
         if (session?.user && event === 'SIGNED_IN') {
+          const email = session.user.email?.toLowerCase() || ''
+          const isAllowed = /(^|\.)aoyama\.ac\.jp$/.test(email.split('@')[1] || '') || /^aoyama\.jp$/.test(email.split('@')[1] || '')
+          if (!isAllowed) {
+            console.warn('🚫 Domain not allowed. Signing out and redirecting to landing with error.')
+            await supabase.auth.signOut()
+            const redirectBase = window.location.href.includes('localhost') 
+              ? 'http://localhost:5173/' 
+              : 'https://0319-2004.github.io/replit_vision_mate/'
+            const url = new URL(redirectBase)
+            url.searchParams.set('error', 'domain_not_allowed')
+            window.location.replace(url.toString())
+            return
+          }
+
+          // ユーザー情報をデータベースに同期
           console.log('🔄 Syncing user to database...')
           await syncUserToDatabase(session.user)
         }
@@ -155,10 +170,13 @@ export function useSupabaseAuth() {
   // Googleサインイン
   const signInWithGoogle = async () => {
     try {
+      const redirectUrl = window.location.href.includes('localhost') 
+        ? 'http://localhost:5173/' 
+        : 'https://0319-2004.github.io/replit_vision_mate/'
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: redirectUrl,
         }
       })
       if (error) throw error
