@@ -43,7 +43,8 @@ export function useSupabaseAuth() {
         if (typeof window !== 'undefined' && window.location.search.includes('code=')) {
           try {
             console.log('🔁 Exchanging code for session...')
-            const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.search)
+            // フルURLを渡す（ライブラリはURL解析してcode/verifierを取得）
+            const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href)
             if (error) {
               console.error('❌ exchangeCodeForSession error:', error)
             } else {

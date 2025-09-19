@@ -9,11 +9,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: window.localStorage,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true,
+    // GitHub Pages では hash/query を独自に処理するため、SDKの自動検出はオフ
+    detectSessionInUrl: false,
     debug: true,  // デバッグモードを有効にしてエラーを確認
     flowType: 'pkce',  // PKCEフローを使用してセキュリティを向上
-    storageKey: 'visionmates-auth-token',
-    storageSync: true
+    storageKey: 'visionmates-auth-token'
   },
   global: {
     headers: {
