@@ -22,11 +22,10 @@ export const projectsApi = {
     try {
       console.log('🔍 Fetching projects from Supabase...');
       
-      // まず基本的な接続テスト
-      const { data: testData, error: testError } = await supabase
+      // まず基本的な接続テスト（count取得：head=trueでボディを返さず件数のみ）
+      const { count: testCount, error: testError } = await supabase
         .from('projects')
-        .select('count')
-        .limit(1);
+        .select('*', { count: 'exact', head: true });
       
       if (testError) {
         console.error('❌ Supabase connection test failed:', testError);
@@ -39,14 +38,14 @@ export const projectsApi = {
         throw testError;
       }
       
-      console.log('✅ Supabase connection test passed');
+      console.log('✅ Supabase connection test passed', typeof testCount === 'number' ? `(rows: ${testCount})` : '');
       
       // プロジェクトデータを取得
       const { data, error } = await supabase
         .from('projects')
         .select(`
           *,
-          creator:users!creator_id (
+          creator:users!projects_creator_id_fkey (
             id,
             first_name,
             last_name,
@@ -69,9 +68,54 @@ export const projectsApi = {
         throw error
       }
       
-      console.log('✅ Projects fetched successfully:', data?.length || 0, 'projects');
-      console.log('📊 Sample project data:', data?.[0] || 'No projects found');
-      return data || []
+      // 0件の場合は、データ存在確認のためフィルタ無しでもう一度確認（デバッグ目的）
+      let rows = data || [];
+      if (!rows || rows.length === 0) {
+        console.warn('⚠️ No active projects found. Retrying without is_active filter to diagnose data state...');
+        const { data: allProjects, error: allError } = await supabase
+          .from('projects')
+          .select(`
+            *,
+            creator:users!projects_creator_id_fkey (
+              id,
+              first_name,
+              last_name,
+              display_name,
+              avatar_url,
+              profile_image_url
+            )
+          `)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        if (allError) {
+          console.error('❌ Supabase secondary fetch error:', allError);
+        } else {
+          console.log('🔎 Secondary fetch (no filter) rows:', allProjects?.length || 0);
+          rows = allProjects || [];
+        }
+      }
+
+      const formatted = (rows || []).map((project: any) => ({
+        id: project.id,
+        title: project.title,
+        description: project.description,
+        creatorId: project.creator_id,
+        isActive: project.is_active,
+        createdAt: project.created_at,
+        updatedAt: project.updated_at,
+        creator: {
+          id: project.creator?.id,
+          firstName: project.creator?.first_name,
+          lastName: project.creator?.last_name,
+          displayName: project.creator?.display_name,
+          avatarUrl: project.creator?.avatar_url,
+          profileImageUrl: project.creator?.profile_image_url,
+        },
+      }));
+
+      console.log('✅ Projects fetched successfully:', formatted.length, 'projects');
+      console.log('📊 Sample project data:', formatted[0] || 'No projects found');
+      return formatted
     } catch (error) {
       console.error('❌ Error in getAll:', error)
       console.error('❌ Full error object:', error);
@@ -122,21 +166,25 @@ export const projectsApi = {
         id: project.id,
         title: project.title,
         description: project.description,
-        creator_id: project.creator_id,
-        is_active: project.is_active,
-        created_at: project.created_at,
-        updated_at: project.updated_at,
+        // camelCaseに正規化（UIはcamelCaseを参照）
+        creatorId: project.creator_id,
+        isActive: project.is_active,
+        createdAt: project.created_at,
+        updatedAt: project.updated_at,
         creator: {
-          id: project.creator.id,
-          first_name: project.creator.first_name,
-          profile_image_url: project.creator.profile_image_url,
+          id: project.creator?.id,
+          firstName: project.creator?.first_name,
+          profileImageUrl: project.creator?.profile_image_url,
         },
-        participations: project.participations || []
+        participations: (project.participations || []).map((p: any) => ({
+          type: p.type,
+          userId: p.user_id,
+        })),
       }));
 
       const hasMore = formattedProjects.length === limit;
       const nextCursor = formattedProjects.length > 0 ? {
-        lastCreatedAt: formattedProjects[formattedProjects.length - 1].created_at || '',
+        lastCreatedAt: formattedProjects[formattedProjects.length - 1].createdAt || '',
         lastId: formattedProjects[formattedProjects.length - 1].id
       } : null;
 
