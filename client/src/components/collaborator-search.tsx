@@ -370,7 +370,7 @@ export function CollaboratorSearch({ projectId, isOwner }: CollaboratorSearchPro
                         <p className="text-sm">検索条件を調整してみてください</p>
                       </div>
                     ) : (
-                      candidates.map((candidate) => (
+                      candidates.map((candidate: Candidate) => (
                         <Card key={candidate.user_id} className="p-4">
                           <div className="flex items-center gap-3">
                             <Avatar>

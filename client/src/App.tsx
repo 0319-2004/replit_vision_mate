@@ -44,9 +44,8 @@ export default function App() {
         const decoded = l.search.slice(1).split('&').map(function(s) { 
           return s.replace(/~and~/g, '&')
         }).join('?');
-        window.history.replaceState(null, null,
-            l.pathname.slice(0, -1) + decoded + l.hash
-        );
+        const newUrl = l.pathname.slice(0, -1) + decoded + l.hash;
+        window.history.replaceState({}, '', newUrl);
       }
     };
     

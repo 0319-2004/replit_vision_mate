@@ -33,13 +33,57 @@ export default function HomePage() {
     );
   }
 
+  if (error) {
+    console.error('❌ プロジェクト取得エラー:', error);
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">
+            <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 14.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold mb-2">プロジェクトの読み込みに失敗しました</h3>
+          <p className="text-muted-foreground mb-4">
+            {error instanceof Error ? error.message : 'ネットワークエラーまたは認証の問題が発生しました'}
+          </p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            再読み込み
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!projects || projects.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="text-muted-foreground mb-4">
+            <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8l-2-2m0 0l-2 2m2-2v6m-13 4l2 2m0 0l2-2m-2 2v-6" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold mb-2">プロジェクトがまだありません</h3>
+          <p className="text-muted-foreground mb-4">最初のプロジェクトを作成して始めましょう</p>
+          <Link href="/projects/new">
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              プロジェクト作成
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="px-0 md:px-0 py-0 md:py-0">
       {/* Welcome Header */}
       <div className="flex justify-between items-center mb-4 md:mb-6 px-4">
         <div>
           <h1 className="text-xl md:text-2xl font-semibold mb-1">
-おかえりなさい、{(user as User)?.firstName || 'ビジョナリー'}さん！👋
+おかえりなさい、{(user as any)?.user_metadata?.first_name || (user as any)?.user_metadata?.name || 'ビジョナリー'}さん！👋
           </h1>
           <p className="text-sm text-muted-foreground">
 新しいプロジェクトを発見したり、あなたのビジョンをコミュニティと共有しましょう。

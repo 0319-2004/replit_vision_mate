@@ -36,8 +36,9 @@ export default function DebugPage() {
 
       } catch (error) {
         console.error('💥 Debug check failed:', error);
+        const message = error instanceof Error ? error.message : String(error);
         setDebugInfo({
-          error: error.message,
+          error: message,
           timestamp: new Date().toISOString()
         });
       }

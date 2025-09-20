@@ -119,7 +119,8 @@ export const projectsApi = {
     } catch (error) {
       console.error('❌ Error in getAll:', error)
       console.error('❌ Full error object:', error);
-      return []
+      // エラーを再投げしてReact Queryがキャッチできるようにする
+      throw error
     }
   },
 

@@ -56,8 +56,7 @@ export default function LandingPage() {
                   console.error('❌ OAuth Error:', error);
                   console.error('❌ Error details:', {
                     message: error.message,
-                    status: error.status,
-                    statusText: error.statusText
+                    status: (error as any)?.status
                   });
                   alert(`認証エラー: ${error.message}`);
                 } else {

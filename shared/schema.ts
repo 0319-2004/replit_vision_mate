@@ -335,8 +335,8 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 // Safe public user type for discover/public endpoints - excludes sensitive data
 export type PublicUser = {
   id: string;
-  first_name: string | null;
-  profile_image_url: string | null;
+  firstName: string | null;
+  profileImageUrl: string | null;
 };
 
 export type Project = typeof projects.$inferSelect;
@@ -375,7 +375,7 @@ export type InsertProjectRequiredSkill = z.infer<typeof insertProjectRequiredSki
 // Extended types with relations for frontend use
 export type ProjectWithDetails = Project & {
   creator: User;
-  participations: Participation[];
+  participations: (Participation & { user: User })[];
   progressUpdates: (ProgressUpdate & { user: User })[];
   comments: (Comment & { user: User })[];
   // Note: reactions will be fetched separately when needed

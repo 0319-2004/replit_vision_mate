@@ -40,22 +40,33 @@ export function useSupabaseAuth() {
       
       try {
         // OAuth(PKCE) リダイレクト後の code を明示的にセッションへ交換
-        if (typeof window !== 'undefined' && window.location.search.includes('code=')) {
-          try {
-            console.log('🔁 Exchanging code for session...')
-            // フルURLを渡す（ライブラリはURL解析してcode/verifierを取得）
-            const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href)
-            if (error) {
-              console.error('❌ exchangeCodeForSession error:', error)
-            } else {
-              console.log('✅ Code exchanged. Has session:', !!data.session)
-              // URLをクリーンアップ
-              const cleaned = new URL(window.location.href)
-              cleaned.search = ''
-              window.history.replaceState({}, document.title, cleaned.toString())
+        if (typeof window !== 'undefined') {
+          const hasCodeInSearch = window.location.search.includes('code=')
+          const hasCodeInHash = window.location.hash.includes('code=')
+          
+          if (hasCodeInSearch || hasCodeInHash) {
+            try {
+              console.log('🔁 Exchanging code for session...', { hasCodeInSearch, hasCodeInHash })
+              // フルURLを渡す（ライブラリはURL解析してcode/verifierを取得）
+              const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href)
+              if (error) {
+                console.error('❌ exchangeCodeForSession error:', error)
+              } else {
+                console.log('✅ Code exchanged. Has session:', !!data.session)
+                // URLをクリーンアップ（HashRouterの場合はhashも考慮）
+                if (hasCodeInHash) {
+                  // ハッシュをクリーンアップ
+                  window.history.replaceState({}, document.title, window.location.pathname + '#/')
+                } else {
+                  // 検索パラメータをクリーンアップ
+                  const cleaned = new URL(window.location.href)
+                  cleaned.search = ''
+                  window.history.replaceState({}, document.title, cleaned.toString())
+                }
+              }
+            } catch (ex) {
+              console.warn('⚠️ exchangeCodeForSession threw:', ex)
             }
-          } catch (ex) {
-            console.warn('⚠️ exchangeCodeForSession threw:', ex)
           }
         }
         
@@ -191,8 +202,9 @@ export function useSupabaseAuth() {
   const signInWithGoogle = async () => {
     try {
       const redirectUrl = window.location.href.includes('localhost') 
-        ? 'http://localhost:5173/' 
-        : 'https://0319-2004.github.io/replit_vision_mate/'
+        ? 'http://localhost:5173/#/' 
+        : 'https://0319-2004.github.io/replit_vision_mate/#/'
+      console.log('🔗 OAuth redirectTo URL:', redirectUrl)
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

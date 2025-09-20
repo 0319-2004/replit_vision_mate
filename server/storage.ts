@@ -246,7 +246,7 @@ export class DatabaseStorage implements IStorage {
 
   // New paginated method for better performance
   async getProjectsForDiscoverPaginated(limit: number = 12, lastCreatedAt?: string, lastId?: string): Promise<Array<Project & { creator: PublicUser; participations: Participation[] }>> {
-    let query = db
+    const baseSelect = db
       .select({
         id: projects.id,
         title: projects.title,
@@ -262,23 +262,23 @@ export class DatabaseStorage implements IStorage {
         },
       })
       .from(projects)
-      .innerJoin(users, eq(projects.creatorId, users.id))
-      .where(eq(projects.isActive, true));
+      .innerJoin(users, eq(projects.creatorId, users.id));
 
-    // Cursor-based pagination using created_at and id
-    if (lastCreatedAt && lastId) {
-      query = query.where(
-        or(
+    // Build where expression once
+    const isActiveExpr = eq(projects.isActive, true);
+    const cursorExpr = (lastCreatedAt && lastId)
+      ? or(
           lt(projects.createdAt, new Date(lastCreatedAt)),
           and(
             eq(projects.createdAt, new Date(lastCreatedAt)),
             lt(projects.id, lastId)
           )
         )
-      );
-    }
+      : undefined;
+    const whereExpr = cursorExpr ? and(isActiveExpr, cursorExpr) : isActiveExpr;
 
-    const projectsData = await query
+    const projectsData = await baseSelect
+      .where(whereExpr)
       .orderBy(desc(projects.createdAt), desc(projects.id))
       .limit(limit);
 

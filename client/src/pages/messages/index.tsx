@@ -117,7 +117,7 @@ export default function MessagesPage() {
           </TabsTrigger>
           <TabsTrigger value="interests" className="flex items-center gap-2">
             <Heart className="w-4 h-4" />
-            気になる ({receivedInterests.length})
+            気になる ({receivedInterests?.length || 0})
           </TabsTrigger>
         </TabsList>
 

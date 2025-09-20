@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,17 +17,36 @@ import { Link } from "wouter";
 import { projectLikesApi } from "@/lib/supabaseApi";
 
 export default function LikesPage() {
-  const [lastCreatedAt, setLastCreatedAt] = useState<string>();
+  const [lastCreatedAt, setLastCreatedAt] = useState<string | undefined>(undefined);
+  const [allLikes, setAllLikes] = useState<any[]>([]);
 
-  const { data: likes = [], isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useQuery({
-    queryKey: ["project-likes", "user"],
+  const { data: likes = [], isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["project-likes", lastCreatedAt ?? null],
     queryFn: () => projectLikesApi.getUserLikes(12, lastCreatedAt),
   });
 
+  useEffect(() => {
+    if (likes && likes.length > 0) {
+      setAllLikes(prev => {
+        const merged = [...prev, ...likes];
+        // dedupe by project_id + created_at
+        const seen = new Set<string>();
+        return merged.filter(item => {
+          const key = `${item.project?.id}-${item.created_at}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      });
+    }
+  }, [likes]);
+
   const loadMore = () => {
-    if (likes.length > 0) {
-      setLastCreatedAt(likes[likes.length - 1].created_at);
-      fetchNextPage();
+    if (allLikes.length > 0) {
+      const last = allLikes[allLikes.length - 1];
+      setLastCreatedAt(last.created_at);
+      // trigger refetch with new cursor
+      setTimeout(() => refetch(), 0);
     }
   };
 
@@ -107,7 +126,7 @@ export default function LikesPage() {
         <>
           {/* Projects Grid */}
           <div className="grid gap-4 md:gap-6 md:grid-cols-2">
-            {likes.map((like: any) => {
+            {allLikes.map((like: any) => {
               const project = like.project;
               return (
                 <Card key={project.id} className="overflow-hidden hover-elevate">
@@ -169,17 +188,15 @@ export default function LikesPage() {
           </div>
 
           {/* Load More */}
-          {hasNextPage && (
-            <div className="text-center mt-8">
-              <Button 
-                onClick={loadMore}
-                disabled={isFetchingNextPage}
-                variant="outline"
-              >
-                {isFetchingNextPage ? "読み込み中..." : "もっと見る"}
-              </Button>
-            </div>
-          )}
+          <div className="text-center mt-8">
+            <Button 
+              onClick={loadMore}
+              disabled={isFetching}
+              variant="outline"
+            >
+              {isFetching ? "読み込み中..." : "もっと見る"}
+            </Button>
+          </div>
         </>
       )}
     </div>

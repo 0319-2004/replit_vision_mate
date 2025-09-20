@@ -45,6 +45,7 @@ export function ClapButton({
     initialData: { count: initialCount, userReacted: initialUserReacted },
   });
 
+  type ReactionStatus = { count: number; userReacted: boolean };
   const clapMutation = useMutation({
     mutationFn: async () => {
       return apiRequest('POST', '/api/reactions', {
@@ -57,23 +58,23 @@ export function ClapButton({
       await queryClient.cancelQueries({ queryKey: ['/api/reactions', targetType, targetId] });
       
       // Snapshot the previous value
-      const previousData = queryClient.getQueryData(['/api/reactions', targetType, targetId]);
+      const previousData = queryClient.getQueryData<ReactionStatus>(['/api/reactions', targetType, targetId]);
       
       // Optimistically update
-      const currentReacted = previousData?.userReacted || false;
-      const currentCount = previousData?.count || 0;
+      const currentReacted = previousData?.userReacted ?? initialUserReacted;
+      const currentCount = previousData?.count ?? initialCount;
       
       queryClient.setQueryData(['/api/reactions', targetType, targetId], {
         count: currentReacted ? currentCount - 1 : currentCount + 1,
         userReacted: !currentReacted,
       });
       
-      return { previousData };
+      return { previousData } as { previousData?: ReactionStatus };
     },
     onError: (err, variables, context) => {
       // Rollback on error
       if (context?.previousData) {
-        queryClient.setQueryData(['/api/reactions', targetType, targetId], context.previousData);
+        queryClient.setQueryData<ReactionStatus>(['/api/reactions', targetType, targetId], context.previousData);
       }
       
       toast({
@@ -82,19 +83,24 @@ export function ClapButton({
         variant: "destructive",
       });
     },
-    onSuccess: (data: any) => {
-      // Update with server response
-      queryClient.setQueryData(
-        ['/api/reactions', targetType, targetId],
-        { count: data.count, userReacted: data.userReacted }
-      );
+    onSuccess: async (res: Response) => {
+      let payload: any | null = null;
+      try {
+        payload = await res.json();
+        queryClient.setQueryData<ReactionStatus>(
+          ['/api/reactions', targetType, targetId],
+          { count: payload.count ?? 0, userReacted: payload.userReacted ?? false }
+        );
+      } catch {
+        // ignore JSON parse error and keep optimistic value
+      }
 
       // Trigger animation
       setIsAnimating(true);
       setTimeout(() => setIsAnimating(false), 600);
 
       // Show feedback based on action
-      if (data.action === 'added') {
+      if (payload && payload.action === 'added') {
         toast({
           title: "拍手しました！ / Clapped!",
           description: "応援の気持ちを送りました / Your support has been sent",
